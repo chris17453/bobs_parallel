@@ -6,6 +6,8 @@ generic messages (e.g. the frontend, originally committed as "initial").
 ## Unreleased
 
 ### Added
+- **Who-to-follow suggestions** — `GET /api/users/suggestions` (excludes self + already-followed,
+  ranked by follower count); a "Suggested for you" section on the Friends page.
 - **Full-screen Now Playing** — tap the mini-player to expand a full-screen view: large art,
   large visualizer, scrubber with elapsed/remaining time, transport controls, and like/share
   for the current track. Layered on the shared PlayerContext (no second audio element).

@@ -113,6 +113,14 @@ class SocialService:
         users = self.users.directory(exclude_id=exclude)
         return {"users": [self.serialize_user(u, viewer) for u in users]}
 
+    def suggestions(self, viewer, limit=20):
+        """People to follow: not you, not already followed, most-followed first."""
+        followed = set(self.follows.followed_ids(viewer.id)) if viewer else set()
+        users = self.users.directory(exclude_id=viewer.id if viewer else None, limit=100)
+        candidates = [u for u in users if u.id not in followed]
+        candidates.sort(key=lambda u: self.follows.follower_count(u.id), reverse=True)
+        return {"users": [self.serialize_user(u, viewer) for u in candidates[:limit]]}
+
     def followers(self, user_id, viewer=None):
         if self.users.get(user_id) is None:
             raise NotFound("user_not_found")

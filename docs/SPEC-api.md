@@ -32,6 +32,7 @@ paginate use the cursor model from [SPEC-data-model](./SPEC-data-model.md).
 | POST | `/api/notifications/read` | Mark all read → `{ok, unread_count: 0}` |
 | GET | `/api/search?q=` | `{items, users}` |
 | GET | `/api/users` | Directory to follow |
+| GET | `/api/users/suggestions` | Who-to-follow: excludes self + already-followed, ranked by followers (auth) |
 | GET | `/api/users/<id>` | **Flat** profile: `{id, username, display_name, avatar_url, is_following?, like_count, follower_count, following_count, likes[]}` (not nested under `user`) |
 | GET | `/api/users/<id>/followers` | `{users}` who follow this user (w/ `is_following`) |
 | GET | `/api/users/<id>/following` | `{users}` this user follows (w/ `is_following`) |

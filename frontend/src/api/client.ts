@@ -135,6 +135,8 @@ export const api = {
 
   // ---- social ----
   users: (signal?: AbortSignal) => request<{ users: User[] }>('/api/users', { signal }),
+  suggestions: (signal?: AbortSignal) =>
+    request<{ users: User[] }>('/api/users/suggestions', { signal }),
   user: (id: string, signal?: AbortSignal) =>
     request<Profile>(`/api/users/${encodeURIComponent(id)}`, { signal }),
   follow: (id: string) =>

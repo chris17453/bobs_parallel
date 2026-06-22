@@ -130,6 +130,11 @@ def users():
     return jsonify(social.directory(viewer=current_user()))
 
 
+@bp.get("/users/suggestions")
+def user_suggestions():
+    return jsonify(social.suggestions(require_user()))
+
+
 @bp.get("/users/<user_id>")
 def user_profile(user_id):
     return jsonify(social.profile(user_id, viewer=current_user()))
