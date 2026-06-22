@@ -6,6 +6,11 @@ generic messages (e.g. the frontend, originally committed as "initial").
 ## Unreleased
 
 ### Added
+- **Now-playing player + visualizer** — persistent MiniPlayer bar (above the bottom nav) with
+  album art, play/pause, 30s scrubber, mute, and a Web Audio frequency **visualizer**
+  (AnalyserNode FFT, with a playback-synced fallback when preview hosts lack CORS). A global
+  `PlayerContext` owns the single `<audio>` element; FeedCard drives it (no per-card audio),
+  so only one track plays and audio persists across navigation.
 - **Profile editing** — `PATCH /api/me` (display name + avatar, validated, blocks `javascript:`
   URIs) and an Edit-profile dialog on your own profile (name field + preset/custom avatar
   picker) that updates the auth identity cache live.
