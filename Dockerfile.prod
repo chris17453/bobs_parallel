@@ -1,0 +1,26 @@
+# Production image: build the React app, then serve it from the Flask/gunicorn backend
+# (same origin -> no CORS in prod). One container runs the whole web tier.
+
+# ---- Stage 1: build frontend ----
+FROM node:22-slim AS frontend
+WORKDIR /fe
+COPY frontend/package*.json ./
+RUN npm install
+COPY frontend/ .
+RUN npm run build   # -> /fe/dist
+
+# ---- Stage 2: backend + baked static assets ----
+FROM python:3.13-slim AS web
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    FRONTEND_DIST=/app/frontend_dist
+
+WORKDIR /app
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt gunicorn
+COPY backend/ .
+COPY --from=frontend /fe/dist /app/frontend_dist
+
+EXPOSE 5000
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "3", "--timeout", "60", "wsgi:app"]

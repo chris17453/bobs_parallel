@@ -1,0 +1,56 @@
+# Local development stack: Postgres + Flask (reloader) + Vite (HMR).
+# Source is mounted so edits hot-reload. `make up` builds and starts this.
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-parallel}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-parallel}
+      POSTGRES_DB: ${POSTGRES_DB:-parallel}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-parallel}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./backend
+    command: flask --app wsgi run --host 0.0.0.0 --port 5000 --debug
+    environment:
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-parallel}:${POSTGRES_PASSWORD:-parallel}@db:5432/${POSTGRES_DB:-parallel}
+      FLASK_SECRET_KEY: ${FLASK_SECRET_KEY:-dev-insecure-secret}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:5000}
+      SPOTIFY_CLIENT_ID: ${SPOTIFY_CLIENT_ID:-}
+      SPOTIFY_CLIENT_SECRET: ${SPOTIFY_CLIENT_SECRET:-}
+      SPOTIFY_REDIRECT_URI: ${SPOTIFY_REDIRECT_URI:-http://localhost:5000/auth/callback}
+      CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+    volumes:
+      - ./backend:/app
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      target: dev
+    environment:
+      VITE_API_BASE: ""
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
