@@ -5,7 +5,7 @@
 DC      := docker compose
 DC_PROD := docker compose -f docker-compose.prod.yml
 
-.PHONY: help up down logs seed scan test test-backend test-frontend migrate fmt prod prod-down psql shell clean
+.PHONY: help up down logs seed scan spotify-check test test-backend test-frontend migrate fmt prod prod-down psql shell clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -26,6 +26,9 @@ seed: ## Default data: scan content + demo users/likes/follow graph
 
 scan: ## Scan Spotify content only (mock unless creds set)
 	$(DC) run --rm api python -m scanner.scan_spotify
+
+spotify-check: ## Verify Spotify creds + live connectivity (pass/fail)
+	$(DC) run --rm api python -m scanner.check_spotify
 
 migrate: ## Create/sync DB schema (create_all runs on app start; this forces it)
 	$(DC) run --rm api python -c "from app import create_app; create_app()"

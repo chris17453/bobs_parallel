@@ -20,6 +20,7 @@ same change — the docs are the source of truth, not the code.
 | [SPEC-api.md](./SPEC-api.md) | REST endpoints contract |
 | [SPEC-testing.md](./SPEC-testing.md) | TDD policy, smoke tests, no-flake rules |
 | [SPEC-infra.md](./SPEC-infra.md) | Docker, Compose, Makefile, deploy, PWA |
+| [SPOTIFY-SETUP.md](./SPOTIFY-SETUP.md) | Going live with real Spotify (env-drop) |
 | [DECISIONS.md](./DECISIONS.md) | Chronological decision log (the "why") |
 | [KNOWLEDGEBASE.md](./KNOWLEDGEBASE.md) | Retained lessons — positive & negative |
 
