@@ -14,6 +14,9 @@ feed built from the likes of people you follow.
    the in-view card drives it, and it stays put as you scroll. The visualizer uses Web Audio
    `AnalyserNode` FFT data when the audio is CORS-enabled, and falls back to a playback-synced
    animation otherwise (preview hosts often lack CORS → analyser would read silence).
+   Tapping the mini-player expands a **full-screen Now-Playing view**: large album art, a large
+   visualizer, full transport (scrubber with elapsed/remaining, play/pause, mute), and
+   like/share for the current track; minimize returns to the bar.
 3. **Search** — top app bar; searches content (title/artist) and people.
 4. **Social (follow model — asymmetric)** — follow anyone, no approval.
 5. **Following feed** — items liked by people you follow.

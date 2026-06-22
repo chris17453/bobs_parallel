@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Box, IconButton, Paper, Slider, Stack, Typography } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PauseIcon from '@mui/icons-material/Pause';
@@ -5,6 +6,7 @@ import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import { usePlayer } from '../player/PlayerContext';
 import Visualizer from './Visualizer';
+import NowPlayingScreen from './NowPlayingScreen';
 
 function fmt(seconds: number): string {
   if (!Number.isFinite(seconds) || seconds < 0) return '0:00';
@@ -19,12 +21,14 @@ function fmt(seconds: number): string {
  */
 export default function MiniPlayer() {
   const { current, isPlaying, muted, position, duration, toggle, seek, setMuted } = usePlayer();
+  const [expanded, setExpanded] = useState(false);
 
   if (!current) return null;
 
   const max = duration > 0 ? duration : 30; // 30s preview default before metadata loads
 
   return (
+    <>
     <Paper
       elevation={6}
       square
@@ -36,31 +40,42 @@ export default function MiniPlayer() {
       }}
     >
       <Stack direction="row" alignItems="center" spacing={1.25} sx={{ px: 1.5, pt: 1 }}>
-        {/* Album art */}
-        <Box
-          sx={{
-            width: 44,
-            height: 44,
-            borderRadius: 1.5,
-            flex: '0 0 auto',
-            bgcolor: 'action.hover',
-            backgroundImage: current.image_url ? `url(${current.image_url})` : undefined,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        />
+        {/* Album art + title open the full-screen Now Playing view. */}
+        <Stack
+          direction="row"
+          alignItems="center"
+          spacing={1.25}
+          onClick={() => setExpanded(true)}
+          role="button"
+          aria-label="Open now playing"
+          sx={{ minWidth: 0, flex: 1, cursor: 'pointer' }}
+        >
+          {/* Album art */}
+          <Box
+            sx={{
+              width: 44,
+              height: 44,
+              borderRadius: 1.5,
+              flex: '0 0 auto',
+              bgcolor: 'action.hover',
+              backgroundImage: current.image_url ? `url(${current.image_url})` : undefined,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          />
 
-        {/* Title + subtitle */}
-        <Box sx={{ minWidth: 0, flex: 1 }}>
-          <Typography variant="subtitle2" noWrap fontWeight={700}>
-            {current.title}
-          </Typography>
-          {current.subtitle && (
-            <Typography variant="caption" color="text.secondary" noWrap component="div">
-              {current.subtitle}
+          {/* Title + subtitle */}
+          <Box sx={{ minWidth: 0, flex: 1 }}>
+            <Typography variant="subtitle2" noWrap fontWeight={700}>
+              {current.title}
             </Typography>
-          )}
-        </Box>
+            {current.subtitle && (
+              <Typography variant="caption" color="text.secondary" noWrap component="div">
+                {current.subtitle}
+              </Typography>
+            )}
+          </Box>
+        </Stack>
 
         {/* Visualizer */}
         <Box sx={{ width: 96, flex: '0 0 auto', display: { xs: 'none', sm: 'block' } }}>
@@ -69,7 +84,10 @@ export default function MiniPlayer() {
 
         {/* Mute */}
         <IconButton
-          onClick={() => setMuted(!muted)}
+          onClick={(e) => {
+            e.stopPropagation();
+            setMuted(!muted);
+          }}
           aria-label={muted ? 'Unmute' : 'Mute'}
           aria-pressed={muted}
           sx={{ minWidth: 44, minHeight: 44, flex: '0 0 auto' }}
@@ -79,7 +97,10 @@ export default function MiniPlayer() {
 
         {/* Play / pause */}
         <IconButton
-          onClick={toggle}
+          onClick={(e) => {
+            e.stopPropagation();
+            toggle();
+          }}
           aria-label={isPlaying ? 'Pause' : 'Play'}
           color="primary"
           sx={{ minWidth: 44, minHeight: 44, flex: '0 0 auto' }}
@@ -107,5 +128,8 @@ export default function MiniPlayer() {
         </Typography>
       </Stack>
     </Paper>
+
+    {expanded && <NowPlayingScreen open onClose={() => setExpanded(false)} />}
+    </>
   );
 }

@@ -6,6 +6,9 @@ generic messages (e.g. the frontend, originally committed as "initial").
 ## Unreleased
 
 ### Added
+- **Full-screen Now Playing** — tap the mini-player to expand a full-screen view: large art,
+  large visualizer, scrubber with elapsed/remaining time, transport controls, and like/share
+  for the current track. Layered on the shared PlayerContext (no second audio element).
 - **Followers/following lists** — `GET /api/users/:id/followers` + `/following`; profile
   Followers/Following counts are tappable, opening a bottom-sheet list (reuses UserRow with
   follow buttons).
