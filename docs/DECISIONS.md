@@ -31,3 +31,5 @@ change that contradicts a decision must add a superseding entry here.
 | D24 | **Notifications** on follow (recipient = followed user); bell + unread badge | Brief asked for friends/activity; content isn't user-owned so follow is the clean trigger |
 | D25 | **Profile editing** via `PATCH /api/me` (display_name + avatar_url); no file upload | Completes the profile pillar; URL/preset avatars avoid storage infra; validate to block javascript: URIs |
 | D26 | **Global now-playing player + Web Audio visualizer**, single `<audio>` source | It's a music app — a persistent player is the point; one audio element avoids overlap; analyser with playback-synced fallback handles non-CORS preview hosts |
+| D27 | **Same-origin `/api/audio` proxy** (allowlisted) for previews | Makes audio CORS-clean → fixes playback on non-CORS hosts (N11) and enables real AnalyserNode FFT (P6); allowlist prevents SSRF/open-proxy |
+| D28 | **Who-to-follow suggestions** ranked by followers | Rounds out the social loop; excludes self + already-followed |

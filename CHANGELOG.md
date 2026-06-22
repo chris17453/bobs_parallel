@@ -6,6 +6,9 @@ generic messages (e.g. the frontend, originally committed as "initial").
 ## Unreleased
 
 ### Added
+- **Real audio + real-FFT visualizer** — a same-origin `/api/audio` proxy (allowlisted, Range
+  support) streams previews CORS-clean, so audio plays reliably AND the visualizer reads real
+  `AnalyserNode` frequency data (playback-synced fallback retained).
 - **Who-to-follow suggestions** — `GET /api/users/suggestions` (excludes self + already-followed,
   ranked by follower count); a "Suggested for you" section on the Friends page.
 - **Full-screen Now Playing** — tap the mini-player to expand a full-screen view: large art,

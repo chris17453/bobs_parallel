@@ -20,6 +20,16 @@ import type {
 
 const API_BASE: string = import.meta.env.VITE_API_BASE ?? '';
 
+/**
+ * Same-origin audio proxy URL for a remote preview. Streaming the preview through our own
+ * origin makes it CORS-clean (so it plays AND the Visualizer can read real FFT). Returns the
+ * original URL unchanged if there's nothing to proxy.
+ */
+export function audioProxyUrl(previewUrl: string | null | undefined): string {
+  if (!previewUrl) return '';
+  return `${API_BASE}/api/audio?src=${encodeURIComponent(previewUrl)}`;
+}
+
 /** Thrown on non-2xx responses; `code` is the machine-readable `error` field (SPEC-api). */
 export class ApiError extends Error {
   status: number;

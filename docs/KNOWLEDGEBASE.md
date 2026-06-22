@@ -58,6 +58,12 @@ newer entry if something changes. The high-signal items are mirrored in `CLAUDE.
   animation** (not AnalyserNode). Real FFT needs a same-origin audio proxy. Symptom was "the
   mini-player never appears" (audio errored before a track ever became current).
 
+- **P6 — A same-origin audio proxy fixes BOTH the CORS-playback break (N11) and enables real
+  FFT.** Streaming the preview through `/api/audio?src=` (allowlisted to known preview hosts to
+  avoid SSRF/open-proxy; forwards `Range` for seeking) makes the media same-origin, so it plays
+  without `crossOrigin` AND `createMediaElementSource` reads real frequency data. Cost: an audio
+  stream ties up a worker — fine for a demo; use a CDN/edge proxy at scale.
+
 ## How to add an entry
 Append a `P#`/`N#` bullet with: what happened, the lesson, and the SPEC/decision it affects.
 If it changes a rule, also add a `DECISIONS.md` entry and update the relevant SPEC.

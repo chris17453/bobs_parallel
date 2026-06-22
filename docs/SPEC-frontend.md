@@ -42,10 +42,10 @@ frontend/src/
 - **Audio (single source):** a global `PlayerContext` owns the only `<audio>` element. The
   in-view feed card sets the current track (muted autoplay); the **MiniPlayer** gives explicit
   play/pause, scrubber, and mute and persists across navigation. No per-card `<audio>` tags.
-- **Visualizer:** a deterministic **playback-synced** canvas animation (driven by
-  `isPlaying`/`position`). It does NOT use Web Audio: the audio element has no `crossOrigin`
-  (preview hosts lack CORS → it would block the fetch), and `createMediaElementSource` on a
-  cross-origin element would taint/mute it. Real FFT would require a same-origin audio proxy.
+- **Visualizer:** real `AnalyserNode` FFT canvas bars. Audio is loaded via the same-origin
+  `/api/audio?src=` proxy (`audioProxyUrl()`), so it's CORS-clean — the analyser reads real
+  data and there's no `crossOrigin` taint/mute problem. Falls back to a deterministic
+  playback-synced animation when the analyser is silent/unavailable (e.g. jsdom).
 - **Auth UX:** `AuthPage` hosts Spotify button + local login/signup + "forgot password"
   (→ QR). Identity cached per SPEC-auth; shell renders optimistically, `/api/me` confirms.
 - **Accessibility/touch:** ≥44px tap targets, respects `prefers-reduced-motion` for snap.

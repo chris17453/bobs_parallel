@@ -37,6 +37,7 @@ paginate use the cursor model from [SPEC-data-model](./SPEC-data-model.md).
 | GET | `/api/users/<id>/followers` | `{users}` who follow this user (w/ `is_following`) |
 | GET | `/api/users/<id>/following` | `{users}` this user follows (w/ `is_following`) |
 | POST/DELETE | `/api/users/<id>/follow` | Follow / unfollow |
+| GET | `/api/audio?src=` | Stream an **allowlisted** preview through our origin (CORS-clean, supports Range). 403 off-allowlist |
 | GET | `/healthz` | Liveness |
 
 ## Conventions (binding)

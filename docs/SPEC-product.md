@@ -12,9 +12,10 @@ feed built from the likes of people you follow.
    showing the current track (art, title, artist) with play/pause, a 30s-preview scrubber, and
    mute, **plus a live audio visualization** (frequency bars). It is the single audio source:
    the in-view card drives it, and it stays put as you scroll. The visualizer uses Web Audio
-   a **playback-synced animation**. (Preview hosts don't send CORS headers, so `crossOrigin`
-   blocks the audio fetch and routing the cross-origin element through Web Audio would mute it
-   — see KB N11. A same-origin audio proxy could enable real `AnalyserNode` FFT later.)
+   **real `AnalyserNode` FFT**. Previews are streamed through our own `/api/audio` proxy so
+   they're same-origin/CORS-clean (which both fixes playback on non-CORS hosts and lets the
+   analyser read real data); a playback-synced animation is the fallback when the analyser is
+   silent/unavailable. (History: KB N11 — `crossOrigin` on the raw cross-origin URL blocked it.)
    Tapping the mini-player expands a **full-screen Now-Playing view**: large album art, a large
    visualizer, full transport (scrubber with elapsed/remaining, play/pause, mute), and
    like/share for the current track; minimize returns to the bar.

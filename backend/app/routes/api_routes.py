@@ -1,9 +1,11 @@
 """Thin HTTP layer for content/social. Parse → call one service method → jsonify."""
-from flask import Blueprint, jsonify, request, session
+import requests
+from flask import Blueprint, Response, jsonify, request, session, stream_with_context
 
 from ..errors import Unauthorized
 from ..extensions import db
 from ..models import User
+from ..services.audio_service import validated_src
 from ..services import (
     EngagementService,
     FeedService,
@@ -118,6 +120,35 @@ def unread_count():
 @bp.post("/notifications/read")
 def mark_notifications_read():
     return jsonify(notifications.mark_all_read(require_user()))
+
+
+@bp.get("/audio")
+def audio_proxy():
+    """Stream an allowlisted 30s preview through our origin (CORS-clean, supports Range)."""
+    src = validated_src(request.args.get("src"))
+    fwd = {}
+    if request.headers.get("Range"):
+        fwd["Range"] = request.headers["Range"]
+    upstream = requests.get(src, stream=True, timeout=15, headers=fwd)
+
+    passthrough = {"content-type", "content-length", "accept-ranges", "content-range"}
+    headers = {k: v for k, v in upstream.headers.items() if k.lower() in passthrough}
+    headers.setdefault("Accept-Ranges", "bytes")
+    headers["Cache-Control"] = "public, max-age=3600"
+
+    def generate():
+        try:
+            for chunk in upstream.iter_content(chunk_size=8192):
+                yield chunk
+        finally:
+            upstream.close()
+
+    return Response(
+        stream_with_context(generate()),
+        status=upstream.status_code,
+        headers=headers,
+        content_type=upstream.headers.get("Content-Type", "audio/mpeg"),
+    )
 
 
 @bp.get("/search")

@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 import type { FeedItem } from '../api/types';
+import { audioProxyUrl } from '../api/client';
 
 interface PlayerState {
   current: FeedItem | null;
@@ -110,12 +111,13 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       if (!audio || !item.preview_url) return; // tracks have previews; albums/artists usually don't
 
       // Same track already loaded → resume (don't restart).
-      const sameItem = current?.id === item.id && audio.src === item.preview_url;
+      const proxied = audioProxyUrl(item.preview_url);
+      const sameItem = current?.id === item.id && audio.src.endsWith(encodeURIComponent(item.preview_url));
       if (!sameItem) {
         setCurrent(item);
         setPosition(0);
         setDuration(0);
-        audio.src = item.preview_url;
+        audio.src = proxied;
         audio.load();
       }
       audio.muted = muted;
@@ -142,7 +144,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       setPosition(0);
       setDuration(0);
       setIsPlaying(false);
-      audio.src = item.preview_url;
+      audio.src = audioProxyUrl(item.preview_url);
       audio.load();
     },
     [current],
