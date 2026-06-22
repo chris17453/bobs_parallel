@@ -27,6 +27,10 @@ newer entry if something changes. The high-signal items are mirrored in `CLAUDE.
 - **N6 — `psycopg2-binary==2.9.9` has no cp313 wheel** → on Python 3.13 pip falls back to a
   source build and dies with `pg_config executable not found`. Pin `>=2.9.10` (ships 3.13
   wheels). Tests use SQLite so they don't need it, but install must still succeed.
+- **N7 — Vite dev proxy can't target `localhost` inside Docker.** The frontend container's
+  `localhost` is itself, not the API container. Make the proxy target env-driven
+  (`VITE_PROXY_TARGET`) and set it to `http://api:5000` in compose; default `localhost:5000`
+  for bare-metal dev. Also set Vite `server.host: true` so the port is reachable.
 
 ## How to add an entry
 Append a `P#`/`N#` bullet with: what happened, the lesson, and the SPEC/decision it affects.

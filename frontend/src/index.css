@@ -1,0 +1,21 @@
+:root {
+  color-scheme: dark light;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  overscroll-behavior-y: none;
+}
+
+/* Hide scrollbars on the snap feed while keeping scroll functional. */
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}

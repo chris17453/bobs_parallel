@@ -2,16 +2,21 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// https://vite.dev/config/
+// In Docker the API is reachable as http://api:5000; on bare metal it's localhost.
+// VITE_PROXY_TARGET (set by docker-compose) overrides the default.
+const apiTarget = process.env.VITE_PROXY_TARGET || 'http://localhost:5000';
+
+// https://vite.dev/config/  (test block typed via the vitest/config reference above)
 export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
+    host: true, // listen on 0.0.0.0 so the container port is reachable
     proxy: {
       // Proxy API + auth to Flask so the session cookie is same-site in dev.
-      '/api': { target: 'http://localhost:5000', changeOrigin: true },
-      '/auth': { target: 'http://localhost:5000', changeOrigin: true },
-      '/healthz': { target: 'http://localhost:5000', changeOrigin: true },
+      '/api': { target: apiTarget, changeOrigin: true },
+      '/auth': { target: apiTarget, changeOrigin: true },
+      '/healthz': { target: apiTarget, changeOrigin: true },
     },
   },
   test: {
