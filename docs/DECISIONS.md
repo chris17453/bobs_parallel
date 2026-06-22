@@ -26,3 +26,5 @@ change that contradicts a decision must add a superseding entry here.
 | D19 | **Password reset via QR/capability URL** (no email) | We have no email delivery; single-use + short-TTL tokens |
 | D20 | **Default/seed data** (≥120 items, demo users, follow graph), deterministic | Reproducible demos; non-empty feeds out of the box |
 | D21 | **Knowledgebase** of positive+negative lessons retained in CLAUDE.md/docs | User: retain learnings at all costs |
+| D22 | **Comments + shares are now in scope** (supersedes D13's likes-only) | User asked to layer them in; flat comments + idempotent shares, EngagementService |
+| D23 | SPA login route is **`/login`**, not `/auth` | `/auth` collides with the proxied API prefix (KB N8) |

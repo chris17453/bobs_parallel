@@ -36,6 +36,14 @@ Postgres (prod/dev). SQLite in-memory only for unit tests. SQLAlchemy ORM.
 ### Like
 `(user_id, item_id)` composite PK. `user_id`→users, `item_id`→feed_items.
 
+### Comment
+`id` int PK. `user_id`→users, `item_id`→feed_items, `body` (≤2000 chars), `created_at`.
+Flat (no nesting in v1). Listed oldest-first. Only the author may delete.
+
+### Share
+`id` int PK. `(user_id, item_id)` is effectively unique (re-share is idempotent).
+`user_id`→users, `item_id`→feed_items, `created_at`. Powers share counts.
+
 ### PasswordReset
 | Column | Type | Notes |
 |--------|------|------|

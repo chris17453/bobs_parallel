@@ -1,22 +1,36 @@
 """Likes, follows, and profiles."""
 from ..errors import BadRequest, NotFound
 from ..extensions import db
-from ..repositories import FeedRepository, FollowRepository, LikeRepository, UserRepository
+from ..repositories import (
+    CommentRepository,
+    FeedRepository,
+    FollowRepository,
+    LikeRepository,
+    ShareRepository,
+    UserRepository,
+)
 
 
 class SocialService:
-    def __init__(self, users=None, feeds=None, likes=None, follows=None):
+    def __init__(
+        self, users=None, feeds=None, likes=None, follows=None, comments=None, shares=None
+    ):
         self.users = users or UserRepository()
         self.feeds = feeds or FeedRepository()
         self.likes = likes or LikeRepository()
         self.follows = follows or FollowRepository()
+        self.comments = comments or CommentRepository()
+        self.shares = shares or ShareRepository()
 
     # ---- item serialization with viewer context ----
     def serialize_item(self, item, viewer=None):
         data = item.to_base_dict()
         data["like_count"] = self.likes.count_for_item(item.id)
+        data["comment_count"] = self.comments.count_for_item(item.id)
+        data["share_count"] = self.shares.count_for_item(item.id)
         if viewer is not None:
             data["liked"] = self.likes.get(viewer.id, item.id) is not None
+            data["shared"] = self.shares.get(viewer.id, item.id) is not None
         return data
 
     def serialize_user(self, user, viewer=None):

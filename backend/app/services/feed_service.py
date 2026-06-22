@@ -1,5 +1,11 @@
 """Feed business logic: the main feed and the following feed, cursor-paginated."""
-from ..repositories import FeedRepository, FollowRepository, LikeRepository
+from ..repositories import (
+    CommentRepository,
+    FeedRepository,
+    FollowRepository,
+    LikeRepository,
+    ShareRepository,
+)
 
 DEFAULT_LIMIT = 10
 MAX_LIMIT = 30
@@ -13,23 +19,28 @@ def clamp_limit(value):
 
 
 class FeedService:
-    def __init__(self, feeds=None, likes=None, follows=None):
+    def __init__(self, feeds=None, likes=None, follows=None, comments=None, shares=None):
         self.feeds = feeds or FeedRepository()
         self.likes = likes or LikeRepository()
         self.follows = follows or FollowRepository()
+        self.comments = comments or CommentRepository()
+        self.shares = shares or ShareRepository()
 
     def _serialize_page(self, rows, limit, viewer):
         has_more = len(rows) > limit
         rows = rows[:limit]
-        liked_ids = (
-            self.likes.liked_item_ids(viewer.id, [r.id for r in rows]) if viewer else set()
-        )
+        ids = [r.id for r in rows]
+        liked_ids = self.likes.liked_item_ids(viewer.id, ids) if viewer else set()
+        shared_ids = self.shares.shared_item_ids(viewer.id, ids) if viewer else set()
         items = []
         for r in rows:
             data = r.to_base_dict()
             data["like_count"] = self.likes.count_for_item(r.id)
+            data["comment_count"] = self.comments.count_for_item(r.id)
+            data["share_count"] = self.shares.count_for_item(r.id)
             if viewer is not None:
                 data["liked"] = r.id in liked_ids
+                data["shared"] = r.id in shared_ids
             items.append(data)
         next_cursor = rows[-1].id if (rows and has_more) else None
         return {"items": items, "next_cursor": next_cursor, "has_more": has_more}

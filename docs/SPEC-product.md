@@ -13,6 +13,8 @@ feed built from the likes of people you follow.
 5. **Following feed** — items liked by people you follow.
 6. **Profile** — your likes, follower/following counts; other users' profiles likewise.
 7. **Likes** — like/unlike any feed item.
+8. **Comments** — threaded comments on any feed item; author may delete their own.
+9. **Shares** — share a feed item; share count shown on the card.
 
 ## UX standards (binding)
 - **Mobile-first. Phone support is mandatory** — design for ~390px width first, scale up.
@@ -24,9 +26,9 @@ feed built from the likes of people you follow.
 - **Typography:** Space Grotesk. **Accent color:** cyan `#00E5C8`.
 
 ## Out of scope for v1 (explicitly deferred)
-- Comments and shares (likes only for now).
 - Real Spotify playback beyond 30s previews.
 - Push notifications.
+- Nested comment replies / reactions (comments are flat for now).
 
 ## Auth
 - Primary: **Spotify OAuth** (Authorization Code).
