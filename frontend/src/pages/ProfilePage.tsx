@@ -17,17 +17,59 @@ import { api } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 import { useFollow } from '../hooks/useFollow';
 import EditProfileDialog from '../components/EditProfileDialog';
+import FollowListSheet from '../components/FollowListSheet';
+import type { FollowListKind } from '../hooks/useFollowList';
 import type { Profile } from '../api/types';
 
-function Stat({ label, value }: { label: string; value: number }) {
-  return (
-    <Stack alignItems="center" sx={{ minWidth: 64 }}>
+function Stat({
+  label,
+  value,
+  onClick,
+}: {
+  label: string;
+  value: number;
+  onClick?: () => void;
+}) {
+  const content = (
+    <>
       <Typography variant="h6" fontWeight={700}>
         {value}
       </Typography>
       <Typography variant="caption" color="text.secondary">
         {label}
       </Typography>
+    </>
+  );
+
+  if (!onClick) {
+    return (
+      <Stack alignItems="center" sx={{ minWidth: 64 }}>
+        {content}
+      </Stack>
+    );
+  }
+
+  return (
+    <Stack
+      component="button"
+      type="button"
+      onClick={onClick}
+      alignItems="center"
+      justifyContent="center"
+      sx={{
+        minWidth: 64,
+        minHeight: 44,
+        px: 1,
+        border: 0,
+        bgcolor: 'transparent',
+        color: 'inherit',
+        font: 'inherit',
+        cursor: 'pointer',
+        borderRadius: 1,
+        '&:hover': { bgcolor: 'action.hover' },
+      }}
+    >
+      {content}
     </Stack>
   );
 }
@@ -39,6 +81,7 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const follow = useFollow();
   const [editOpen, setEditOpen] = useState(false);
+  const [followList, setFollowList] = useState<FollowListKind | null>(null);
 
   const targetId = id ?? me?.id;
   const isOwn = !!targetId && targetId === me?.id;
@@ -92,8 +135,16 @@ export default function ProfilePage() {
 
             <Stack direction="row" spacing={3} sx={{ py: 1 }}>
               <Stat label="Likes" value={data.like_count} />
-              <Stat label="Followers" value={data.follower_count} />
-              <Stat label="Following" value={data.following_count} />
+              <Stat
+                label="Followers"
+                value={data.follower_count}
+                onClick={() => setFollowList('followers')}
+              />
+              <Stat
+                label="Following"
+                value={data.following_count}
+                onClick={() => setFollowList('following')}
+              />
             </Stack>
 
             {isOwn ? (
@@ -153,6 +204,12 @@ export default function ProfilePage() {
               avatarUrl={data.avatar_url}
             />
           )}
+          <FollowListSheet
+            userId={data.id}
+            kind={followList ?? 'followers'}
+            open={followList !== null}
+            onClose={() => setFollowList(null)}
+          />
         </>
       )}
     </Box>

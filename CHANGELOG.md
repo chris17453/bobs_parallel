@@ -6,6 +6,9 @@ generic messages (e.g. the frontend, originally committed as "initial").
 ## Unreleased
 
 ### Added
+- **Followers/following lists** — `GET /api/users/:id/followers` + `/following`; profile
+  Followers/Following counts are tappable, opening a bottom-sheet list (reuses UserRow with
+  follow buttons).
 - **Now-playing player + visualizer** — persistent MiniPlayer bar (above the bottom nav) with
   album art, play/pause, 30s scrubber, mute, and a Web Audio frequency **visualizer**
   (AnalyserNode FFT, with a playback-synced fallback when preview hosts lack CORS). A global

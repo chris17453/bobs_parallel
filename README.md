@@ -9,6 +9,15 @@ full-screen feed, muted-autoplay previews, search, and profiles.
 - **Auth:** Spotify OAuth, local accounts, and offline dev-login; QR/URL password reset (no email)
 - **Infra:** Docker Compose (local hot-reload + prod gunicorn), one Makefile drives everything
 
+### Features
+- Infinite, cursor-paginated, TikTok-style snap-scroll feed of mixed Spotify content
+- **Now-playing player** (persistent mini-player) with a **Web Audio visualizer**
+- Likes, **comments**, **shares** — with live counts on every card
+- **Follow** people, a Following feed of their likes, and **new-follower notifications** (bell + badge)
+- **Profiles**: likes grid, follower/following counts (tap to see the lists), and profile editing
+- Search across content and people; QR-code password reset
+- Seeded demo: 12 users with a real social graph so everything is populated offline
+
 > 📐 **All development is bound by the SPECS in [`docs/`](docs/README.md).** Start with
 > [`CLAUDE.md`](CLAUDE.md) and [`docs/README.md`](docs/README.md). Code conforms to the docs.
 

@@ -145,6 +145,10 @@ export const api = {
     request<{ user: User }>(`/api/users/${encodeURIComponent(id)}/follow`, {
       method: 'DELETE',
     }),
+  followers: (id: string, signal?: AbortSignal) =>
+    request<{ users: User[] }>(`/api/users/${encodeURIComponent(id)}/followers`, { signal }),
+  following: (id: string, signal?: AbortSignal) =>
+    request<{ users: User[] }>(`/api/users/${encodeURIComponent(id)}/following`, { signal }),
 
   // ---- notifications ----
   notifications: (signal?: AbortSignal) =>

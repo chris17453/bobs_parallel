@@ -6,10 +6,12 @@ import { useAuth } from '../auth/AuthContext';
 
 interface Props {
   user: User;
+  /** Called after navigating to the user's profile (e.g. to close a sheet). */
+  onNavigate?: () => void;
 }
 
 /** Directory/search row: avatar + name + follow/unfollow button. */
-export default function UserRow({ user }: Props) {
+export default function UserRow({ user, onNavigate }: Props) {
   const navigate = useNavigate();
   const follow = useFollow();
   const { user: me } = useAuth();
@@ -35,7 +37,10 @@ export default function UserRow({ user }: Props) {
       sx={{ '& .MuiListItemSecondaryAction-root': { right: 8 } }}
     >
       <Box
-        onClick={() => navigate(`/users/${encodeURIComponent(user.id)}`)}
+        onClick={() => {
+          onNavigate?.();
+          navigate(`/users/${encodeURIComponent(user.id)}`);
+        }}
         sx={{ display: 'flex', alignItems: 'center', flex: 1, py: 1, px: 2, cursor: 'pointer' }}
       >
         <ListItemAvatar>
