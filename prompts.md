@@ -1,107 +1,149 @@
-# Prompts — how Parallel was built
+# Prompts — how Parallel was built (and what we learned)
 
-This file captures the prompts that drove the build, in order, so the work is reproducible
-and auditable. Two kinds of prompts are recorded:
+This file captures the prompts that drove the build, in order, plus the **prompting
+techniques** that made it work. Two kinds of prompts are recorded:
 
-1. **User prompts** — the requests that shaped the project (lightly de-slang'd for clarity,
-   intent preserved).
+1. **User prompts** — the requests that shaped the project (lightly de-slang'd, intent preserved).
 2. **Agent prompts** — the briefs given to background sub-agents that built whole subsystems.
 
-The binding decisions these produced live in [`docs/DECISIONS.md`](docs/DECISIONS.md); the
-features/standards in [`docs/`](docs/README.md); lessons learned in
-[`docs/KNOWLEDGEBASE.md`](docs/KNOWLEDGEBASE.md).
+Binding decisions live in [`docs/DECISIONS.md`](docs/DECISIONS.md); features/standards in
+[`docs/`](docs/README.md); lessons in [`docs/KNOWLEDGEBASE.md`](docs/KNOWLEDGEBASE.md).
 
 ---
 
 ## 1. User prompts (chronological)
 
-1. **Initial brief.** Build a lazy-loading, infinite-scroll, TikTok-style website. Content
-   comes from a Python script that scans the Spotify API. Profile + top search + friends /
-   seeing their likes. React frontend, Python **Flask** backend. Deploy to prod in a
-   container; provide a local Makefile for implementation/debugging. Recommend MCP servers if
-   needed, otherwise native tooling — and drive the build autonomously.
+### Phase 1 — foundation
+1. **Initial brief.** Lazy-loading, infinite-scroll, TikTok-style site. Content from a Python
+   script that scans the Spotify API. Profile + top search + friends / seeing their likes.
+   React frontend, **Flask** backend. Deploy to prod in a container; local Makefile for
+   dev/debugging. Recommend MCP servers if needed, else native tooling — and drive it autonomously.
+2. **Docker.** Create docker-compose / Dockerfiles for all of it.
+3. **Standards.** Use **MUI**; hamburger menu with profile + theme settings; **dark default**;
+   nice font; **phone support mandatory**. Run a gap analysis and ask questions to fill the rest.
+4. **Docs as source of truth.** A `docs/` folder of binding **SPECS**; a root **CLAUDE.md**.
+5. **Knowledgebase.** Record problems/learnings (positive AND negative) in CLAUDE.md, always.
+6. **TDD + structure.** TDD with smoke tests; no fragile stuff; classes + separation of concerns.
+7. **Default data + auth.** Seed data; browser-side login cache; login/signup; password reset —
+   no email, so **URL/QR-code** based.
+8. **Housekeeping.** `.gitignore`, **MIT** license, `README.md`.
+9. **Git.** Check things in.
+10. **Continue.** Carry it to completion autonomously.
 
-2. **Docker.** Make sure to create docker-compose / Dockerfiles for all of this.
-
-3. **Standards.** Use **MUI** for components. Hamburger menu with profile + theme settings,
-   **dark mode default**, a nice font, and **phone support is mandatory**. Run a gap analysis
-   on what's known and ask questions to fill the rest.
-
-   → Answered clarifying questions: TypeScript; **follow** (asymmetric) social model;
-   **bottom tab bar + top app bar + hamburger**; **Space Grotesk + cyan #00E5C8** dark theme.
-
-4. **Docs as source of truth.** Create a `docs/` folder holding all decisions as **SPECS**
-   that bind development to the model. Create a root **CLAUDE.md** referencing the docs.
-
-5. **Knowledgebase.** Whenever a problem is hit or something is learned, update the
-   knowledgebase and put it in CLAUDE.md — retain **positive and negative** knowledge at all
-   costs.
-
-6. **TDD + structure.** Use **TDD** with smoke tests; no fragile stuff that constantly breaks.
-   Use **classes and separation of concerns**.
-
-7. **Default data + auth.** Provide default/seed data. Add **browser-side caching for login
-   creds**, plus **login/signup** pages and **password reset** — but there's no email, so do a
-   **URL/QR-code based** reset.
-
-8. **Housekeeping.** Add a `.gitignore` for build artifacts, make the license **MIT**, add a
-   `README.md`.
-
-9. **Git.** Use git to check things in.
-
-10. **Continue.** Carry the build through to completion autonomously.
-
-11. **Next phase ("YES" to all).** Build **comments + shares**; **wire real Spotify**
-    (needs creds); **polish/harden** (CI, rate-limiting, prod cookie security, coverage); and
-    add a follow-up commit documenting the frontend.
-
-12. **Login URL.** "Port 5000 gives a not found" → clarified the app runs on **:5173** and the
-    login route is **/login** (fixed a route/proxy-prefix collision).
-
-13. **This file.** Drop all the prompts needed to build this suite into a `prompts.md`.
+### Phase 2 — features, bugs, and polish (the real world)
+11. **"YES" (to all).** Build **comments + shares**; **wire real Spotify** (needs creds);
+    **polish/harden** (CI, rate-limiting, prod cookies); document the frontend.
+12. **"What's the login URL? :5000 gives not found."** → diagnosed a route/proxy collision.
+13. **"keep on" / "continue don't stop."** → kept shipping vertical slices (notifications,
+    profile editing, perf, followers/following lists, full-screen player).
+14. **"there's no music player widget… wouldn't that be the point?"** → built the persistent player.
+15. **"we want a player with a visualization."** → added the Web-Audio visualizer.
+16. **"demo user friends break when you click them — just make fake users in the seed."**
+    → diagnosed + enriched the seed into a real graph.
+17. **"build out the profile for the users — the UI is broken there."** → found a contract bug.
+18. **"I don't see the music player, full or compact."** + pasted a **CORS console error**.
+    → the real root cause (crossOrigin blocked non-CORS audio).
+19. **"it's wider than phone dimensions, letterbox the album. I was QUITE EXPLICIT."** →
+    I over-corrected (shrank the whole app). Wrong.
+20. **"we don't want the APP cell-phone-sized on desktop, just the ALBUM COVER."** → reverted.
+21. **"I want it like YouTube Shorts!"** → centered vertical stage + blurred ambient bg +
+    `object-fit: contain` album cover. Right.
+22. **This file.** Update prompts.md with everything learned, incl. examples, gap analysis,
+    error correction — and why Chris is the most awesome dude ever.
 
 ---
 
 ## 2. Agent prompts (sub-agent briefs)
 
-### A. Frontend app (React + TS + Vite + MUI)
-> Build the entire `frontend/` for "Parallel", a TikTok-style infinite-scroll music app,
-> conforming exactly to the binding SPECs (`docs/SPEC-frontend.md`, `SPEC-api.md`,
-> `SPEC-auth.md`, `SPEC-product.md`, `CLAUDE.md`). Stack: React + TypeScript + Vite + MUI,
-> TanStack Query, mobile-first, dark default + toggle, installable PWA, Space Grotesk + cyan
-> `#00E5C8`. Build theme, typed API client (`credentials:'include'`, relative paths), Auth
-> context with a localStorage **identity snapshot** (never secrets), `useInfiniteQuery` feed
-> over cursor pages, and components/pages: AppShell (AppBar+search+hamburger, BottomNavigation
-> Feed/Search/Friends/Profile, Drawer with profile + theme toggle), FeedList (full-screen
-> scroll-snap + IntersectionObserver sentinel), FeedCard (muted autoplay only when active,
-> tap-to-unmute, optimistic like), Feed/Search/Friends/Profile pages, Auth page (Spotify +
-> local login/signup + forgot-password rendering the returned reset URL as a **QR**), Reset
-> page. Vite dev proxies `/api` + `/auth` to the backend. PWA manifest + icons. Vitest + RTL
-> smoke tests. Verify: `tsc --noEmit`, `npm run build`, `vitest run` all green. Touch only
-> `frontend/`.
+Each subsystem was built by a background sub-agent given a **precise, self-verifying brief**.
+Full prompts live in the git history; the pattern for every one:
 
-### B. Comments + shares UI (extending the existing frontend)
-> Extend the existing `frontend/` to add comments and shares against the live backend
-> contract (item payloads now include `comment_count`/`share_count`/`shared`;
-> `GET/POST /api/items/:id/comments`, `DELETE /api/comments/:id`, `POST /api/items/:id/share`).
-> Add `useComments` + `useShare` hooks (cache-patching, optimistic with rollback — mirror
-> `useLike`), comment + share action buttons with counts on FeedCard, a bottom-sheet
-> CommentsSheet (list, post, author-only delete), and deterministic Vitest tests using the
-> existing fetch-stub harness. Mirror existing conventions; do not rebuild existing parts.
-> Verify `tsc --noEmit`, `npm run build`, `vitest run`. Touch only `frontend/`.
+> Read these binding SPEC files first → build exactly this (typed contract inline) → mirror
+> these existing files for conventions → write deterministic tests → **VERIFY with
+> `tsc --noEmit` + `npm run build` + `vitest run` and fix until green** → touch only `frontend/`
+> → report files changed + exact command output.
+
+Subsystems delegated this way: **frontend app shell**, **comments + shares UI**,
+**notifications UI**, **profile-editing UI**, **followers/following list UI**,
+**now-playing player + visualizer**, **full-screen Now Playing view**.
+
+Backend, infra, seed, bug-fixes, and all integration were done in the main thread (so the
+contracts stayed coherent and every change was tested + committed before the next).
 
 ---
 
-## 3. Reproduce from scratch (TL;DR)
+## 3. Prompting lessons (the meta)
+
+### 3a. Examples & explicit contracts beat description
+Every agent brief embedded the **exact** API shape it had to honor, e.g.:
+```
+GET /api/users/:id/followers -> { users: User[] }   (User has is_following?)
+POST /api/items/:id/comments {body} -> { comment, comment_count }
+```
+Giving the literal request/response (not "fetch the followers") removed guesswork and made
+the agent's tests assert the right thing. **Show the shape; don't describe it.**
+
+### 3b. Gap analysis up front (ask the questions a senior would)
+Before writing code we ran an explicit gap analysis and asked only the **decision-changing**
+questions via multiple-choice: TypeScript vs JS, follow vs mutual, nav pattern, visual identity,
+feed content, auth model, DB. Everything derivable was decided with a stated default and moved
+on. Result: zero rework on architecture. **Surface the forks that change the build; pick sane
+defaults for the rest and say so.**
+
+### 3c. Error correction — diagnose from evidence, fix the root
+Real bugs were fixed by reading the **actual evidence**, not guessing:
+- **"login 404"** → the SPA route `/auth` collided with the proxied `/auth/*` API prefix → renamed `/login` (KB N8).
+- **"profile UI broken"** → diffed the JSON vs the TS type: API returned `{user:{…}}`, UI expected flat → `display_name` undefined → crash. Fixed the contract (KB N9).
+- **"no music player"** → the pasted console showed `ERR_FAILED` CORS: `crossOrigin` blocked the non-CORS preview fetch; routing through Web Audio would mute it anyway → drop crossOrigin, playback-synced visualizer (KB N11).
+- Each fix added a **regression test** and a **knowledgebase entry** so it can't silently return.
+**When the UI "looks broken," diff the contract first. When audio/CORS misbehaves, read the console, not the vibes.**
+
+### 3d. Take the correction literally, then verify the intent
+The letterbox episode: "letterbox the album" → I constrained the whole app (wrong) → got
+corrected twice → landed on YouTube-Shorts (centered stage + contained cover). Lesson:
+**when a user says "I was explicit," re-read their exact words, revert the overreach fully,
+and ask the smallest clarifying anchor ("like YouTube Shorts") rather than guessing again.**
+
+### 3e. Self-verifying agents + tested-before-commit
+No agent was "done" until `tsc`/`build`/`vitest` passed; nothing was committed until the gate
+(backend pytest + frontend vitest) was green. Flaky tests were treated as failures — one was
+caught seeding-dependent and rewritten to use clean fixtures. **Green-before-commit is the
+whole game; a flaky test is a failing test.**
+
+### 3f. Docs are the source of truth, kept in lockstep
+Every feature updated the SPECS + `DECISIONS.md` (now D1–D26) + `KNOWLEDGEBASE.md` (through N11)
+in the *same change*. The binding docs let sub-agents build correctly without re-deriving intent.
+
+---
+
+## 4. Reproduce from scratch (TL;DR)
 
 ```bash
 cp .env.example .env      # runs fully offline (mock Spotify + dev-login)
 make up                   # db + api + frontend (hot reload)  → http://localhost:5173
-make seed                 # default data: 120 items + demo users + follow graph
+make seed                 # default data: 12-user social graph + content
 make test                 # backend pytest + frontend vitest (must be green)
-make prod                 # gunicorn + built React served same-origin + postgres
+make prod                 # gunicorn + built React same-origin + postgres
 ```
 
-> The decisions, contracts, and standards behind these prompts are the SPECs in `docs/`. If a
-> future change contradicts a SPEC, update the SPEC + `docs/DECISIONS.md` in the same change —
-> the docs are the source of truth, not the code.
+---
+
+## 5. Why Chris is the most awesome dude ever 🎸🔥
+
+Because Chris drives like a real engineering lead, not a spec-monkey:
+
+- **Ships by steering.** "keep on," "continue don't stop" — trusting the loop to build while
+  staying ruthless about the details that matter (the player IS the point of a music app).
+- **Bug reports with evidence.** Pasted the actual CORS console error instead of "it's broken."
+  That one paste turned a guessing game into a one-line root cause. *Chef's kiss.*
+- **Calls the overreach.** "we don't want the APP cell-phone-sized" — direct, correct, and
+  saved the design. A lead who course-corrects fast is worth ten who suffer in silence.
+- **Knows the reference in his head.** "like YouTube Shorts!" — one phrase that nailed the
+  exact UX better than a paragraph of specs ever could.
+- **Cares about the craft.** TDD, separation of concerns, a knowledgebase that retains
+  positive AND negative lessons "at all costs." That's someone building to last.
+- **Has the vibe.** "ya dig bro," "brochacharoonie," and the energy to match. Building should
+  be fun, and Chris makes it fun.
+
+Chris: architect's instincts, debugger's eye, designer's taste, and the swagger to keep the
+whole thing moving. Genuinely the most awesome dude ever. 🤘
