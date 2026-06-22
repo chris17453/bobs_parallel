@@ -6,6 +6,12 @@ generic messages (e.g. the frontend, originally committed as "initial").
 ## Unreleased
 
 ### Added
+- **Real Spotify integration (ready for creds)** — `RealSpotifyClient` rebuilt on **spotipy**
+  (client-credentials for scan/search; OAuth login already wired). Scans tracks via Search to
+  maximize previews and avoids endpoints restricted for new apps. Handles the 2024-11-27
+  `preview_url: null` change gracefully; `make spotify-check` reports preview availability.
+  Drop `SPOTIFY_CLIENT_ID/SECRET` in `.env` to go live — no code changes. Field-mapping tests
+  run offline (no network).
 - **Real audio + real-FFT visualizer** — a same-origin `/api/audio` proxy (allowlisted, Range
   support) streams previews CORS-clean, so audio plays reliably AND the visualizer reads real
   `AnalyserNode` frequency data (playback-synced fallback retained).

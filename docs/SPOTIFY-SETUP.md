@@ -43,10 +43,21 @@ Restart so the app re-reads creds if it was already running: `make down && make 
 | Login | dev-login button | Spotify OAuth (dev-login disabled) |
 | Search | cached items in Postgres | same cache; re-scan to refresh |
 
+## ⚠️ Important: preview availability (Spotify API change, 2024-11-27)
+Spotify now returns **`preview_url: null`** in multi-get / `SimpleTrack` responses (e.g. album
+track lists) under the Client-Credentials flow. To maximize playable audio, our scanner pulls
+**tracks via Search** (full `Track` objects, which can still include a preview) and uses New
+Releases only for album/artist variety. Even so, **some or all tracks may have no preview** —
+those cards still show (art, title, metadata) but simply aren't playable. `make spotify-check`
+reports how many of a sample have a preview. Real Spotify **login + profile + search + metadata
+all work regardless**; only 30s preview audio is subject to this limitation. (KB N11/P6: when a
+preview exists it streams through our same-origin `/api/audio` proxy, CORS-clean.)
+
 ## Notes
-- **Client-credentials** flow powers scanning/search (no user context). **Authorization-code**
-  flow powers user login (`/auth/login` → `/auth/callback`).
-- 30s `preview_url` is only present on some tracks; cards without a preview just don't autoplay.
+- Implemented with the **spotipy** library: client-credentials (`SpotifyClientCredentials`) for
+  scanning/search; the OAuth **Authorization-code** flow (`/auth/login` → `/auth/callback`)
+  powers user login. We deliberately avoid endpoints restricted for new apps (recommendations,
+  related-artists, audio-features, featured/category playlists).
 - In prod, set `SESSION_COOKIE_SECURE=true` (HTTPS) so the OAuth session cookie is secure.
 - Rate limits: scanning hits Spotify's API; for large catalogs, schedule `make scan` rather
   than hammering it. See [SPEC-infra](./SPEC-infra.md).

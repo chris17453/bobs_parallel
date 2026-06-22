@@ -3,11 +3,6 @@
 The rest of the app only talks to `get_client()`, so swapping mock <-> real is a
 single env-var flip (SPOTIFY_CLIENT_ID / SPOTIFY_CLIENT_SECRET).
 """
-import base64
-import time
-
-import requests
-
 SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
 SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token"
 SPOTIFY_API = "https://api.spotify.com/v1"
@@ -68,32 +63,32 @@ class MockSpotifyClient:
 
 
 class RealSpotifyClient:
+    """Real Spotify content via spotipy (client-credentials flow — public data only).
+
+    Heads up (Spotify Web API change, 2024-11-27): `preview_url` is null in multi-get /
+    SimpleTrack responses (e.g. album track lists). Full Track objects from **Search** can
+    still carry it, so we scan tracks via Search to maximize playable previews. Items without
+    a preview are still shown (metadata) but just aren't playable — the UI/player handle that.
+    Restricted-for-new-apps endpoints (recommendations, related-artists, audio-features,
+    featured/category playlists) are intentionally NOT used. Search + New Releases remain open.
+    """
+
     enabled = True
 
     def __init__(self, client_id, client_secret):
+        # Lazy import so the module (and the mock path) load even without spotipy installed.
+        import spotipy
+        from spotipy.oauth2 import SpotifyClientCredentials
+
         self.client_id = client_id
         self.client_secret = client_secret
-        self._app_token = None
-        self._app_token_exp = 0
-
-    # ---- App (client-credentials) token for content scanning/search ----
-    def _client_token(self):
-        if self._app_token and time.time() < self._app_token_exp - 30:
-            return self._app_token
-        auth = base64.b64encode(
-            f"{self.client_id}:{self.client_secret}".encode()
-        ).decode()
-        resp = requests.post(
-            SPOTIFY_TOKEN_URL,
-            data={"grant_type": "client_credentials"},
-            headers={"Authorization": f"Basic {auth}"},
-            timeout=15,
+        self._sp = spotipy.Spotify(
+            auth_manager=SpotifyClientCredentials(
+                client_id=client_id, client_secret=client_secret
+            ),
+            requests_timeout=15,
+            retries=2,
         )
-        resp.raise_for_status()
-        payload = resp.json()
-        self._app_token = payload["access_token"]
-        self._app_token_exp = time.time() + payload.get("expires_in", 3600)
-        return self._app_token
 
     def _normalize_track(self, t):
         return {
@@ -131,47 +126,26 @@ class RealSpotifyClient:
             "popularity": ar.get("popularity", 0),
         }
 
-    def scan(self, limit=120):
-        token = self._client_token()
-        headers = {"Authorization": f"Bearer {token}"}
+    def scan(self, limit=120, year=2025):
         items = []
-        # New releases -> albums + their artists.
-        r = requests.get(
-            f"{SPOTIFY_API}/browse/new-releases",
-            headers=headers, params={"limit": 50}, timeout=15,
-        )
-        r.raise_for_status()
-        for a in r.json().get("albums", {}).get("items", []):
+        # New releases -> albums (visual variety; their SimpleTrack lists lack previews).
+        rel = self._sp.new_releases(limit=50) or {}
+        for a in (rel.get("albums") or {}).get("items", []):
             items.append(self._normalize_album(a))
-        # A few featured-playlist tracks for the track/preview cards.
-        r = requests.get(
-            f"{SPOTIFY_API}/search",
-            headers=headers,
-            params={"q": "year:2024", "type": "track", "limit": 50},
-            timeout=15,
-        )
-        if r.ok:
-            for t in r.json().get("tracks", {}).get("items", []):
-                items.append(self._normalize_track(t))
+        # Tracks via Search -> full Track objects (best shot at a playable preview_url).
+        res = self._sp.search(q=f"year:{year}", type="track", limit=50) or {}
+        for t in (res.get("tracks") or {}).get("items", []):
+            items.append(self._normalize_track(t))
         return items[:limit]
 
     def search(self, query, limit=20):
-        token = self._client_token()
-        headers = {"Authorization": f"Bearer {token}"}
-        r = requests.get(
-            f"{SPOTIFY_API}/search",
-            headers=headers,
-            params={"q": query, "type": "track,album,artist", "limit": limit},
-            timeout=15,
-        )
-        r.raise_for_status()
-        data = r.json()
+        data = self._sp.search(q=query, type="track,album,artist", limit=limit) or {}
         out = []
-        for t in data.get("tracks", {}).get("items", []):
+        for t in (data.get("tracks") or {}).get("items", []):
             out.append(self._normalize_track(t))
-        for a in data.get("albums", {}).get("items", []):
+        for a in (data.get("albums") or {}).get("items", []):
             out.append(self._normalize_album(a))
-        for ar in data.get("artists", {}).get("items", []):
+        for ar in (data.get("artists") or {}).get("items", []):
             out.append(self._normalize_artist(ar))
         return out[:limit]
 

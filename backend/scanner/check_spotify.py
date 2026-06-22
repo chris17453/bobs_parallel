@@ -21,29 +21,25 @@ def main():
         print("  Set SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET in .env, then re-run.")
         return 1
 
-    print("• Creds present. Requesting a client-credentials token…")
-    try:
-        token = client._client_token()
-        print(f"  ✓ Token acquired ({token[:8]}…).")
-    except Exception as e:  # noqa: BLE001 — surface the real reason to the operator
-        print(f"  ✗ Token request failed: {e}")
-        print("  Check the client id/secret are correct and not rate-limited.")
-        return 1
-
-    print("• Performing a small live scan (new releases + tracks)…")
+    print("• Creds present. Performing a small live scan via spotipy (new releases + search)…")
     try:
         items = client.scan(limit=5)
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:  # noqa: BLE001 — surface the real reason to the operator
         print(f"  ✗ Scan failed: {e}")
+        print("  Check the client id/secret are correct and the app isn't rate-limited.")
         return 1
 
     if not items:
         print("  ✗ Scan returned 0 items — unexpected; check API access/region.")
         return 1
 
-    print(f"  ✓ Got {len(items)} item(s). Sample:")
+    playable = sum(1 for it in items if it.get("preview_url"))
+    print(f"  ✓ Got {len(items)} item(s); {playable} with a playable preview. Sample:")
     for it in items[:3]:
         print(f"    - [{it['kind']}] {it['title']} — {it.get('subtitle') or ''}")
+    if playable == 0:
+        print("  ⚠ No preview_url present — expected with Client Credentials since 2024-11-27.")
+        print("    Metadata + Spotify login still work; previews may be unavailable.")
     print("\n✓ Spotify connectivity OK. Run `make scan` (or `make seed`) to populate the feed.")
     return 0
 
