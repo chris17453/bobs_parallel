@@ -69,11 +69,12 @@ export default function AppShell() {
     navigate(q ? `/search?q=${encodeURIComponent(q)}` : '/search');
   };
 
-  // Outer "stage" letterboxes the app to a phone-width frame on wider screens.
-  const inner = chromeless ? (
-    <Outlet />
-  ) : (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+  if (chromeless) {
+    return <Outlet />;
+  }
+
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden' }}>
       <AppBar position="static" color="default" elevation={0} enableColorOnDark>
         <Toolbar sx={{ gap: 1, minHeight: 56 }}>
           <IconButton
