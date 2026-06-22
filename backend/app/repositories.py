@@ -142,6 +142,28 @@ class FollowRepository:
     def following_count(self, user_id):
         return Follow.query.filter_by(follower_id=user_id).count()
 
+    def followers(self, user_id, limit=100):
+        """Users who follow user_id (newest first)."""
+        return (
+            db.session.query(User)
+            .join(Follow, Follow.follower_id == User.id)
+            .filter(Follow.followed_id == user_id)
+            .order_by(Follow.created_at.desc())
+            .limit(limit)
+            .all()
+        )
+
+    def following(self, user_id, limit=100):
+        """Users that user_id follows (newest first)."""
+        return (
+            db.session.query(User)
+            .join(Follow, Follow.followed_id == User.id)
+            .filter(Follow.follower_id == user_id)
+            .order_by(Follow.created_at.desc())
+            .limit(limit)
+            .all()
+        )
+
 
 def _grouped_counts(item_col, item_ids):
     """{item_id: count} over item_ids using a single GROUP BY. Missing ids => absent (treat 0)."""

@@ -112,3 +112,15 @@ class SocialService:
         exclude = viewer.id if viewer else None
         users = self.users.directory(exclude_id=exclude)
         return {"users": [self.serialize_user(u, viewer) for u in users]}
+
+    def followers(self, user_id, viewer=None):
+        if self.users.get(user_id) is None:
+            raise NotFound("user_not_found")
+        users = self.follows.followers(user_id)
+        return {"users": [self.serialize_user(u, viewer) for u in users]}
+
+    def following(self, user_id, viewer=None):
+        if self.users.get(user_id) is None:
+            raise NotFound("user_not_found")
+        users = self.follows.following(user_id)
+        return {"users": [self.serialize_user(u, viewer) for u in users]}

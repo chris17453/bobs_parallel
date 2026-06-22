@@ -135,6 +135,16 @@ def user_profile(user_id):
     return jsonify(social.profile(user_id, viewer=current_user()))
 
 
+@bp.get("/users/<user_id>/followers")
+def user_followers(user_id):
+    return jsonify(social.followers(user_id, viewer=current_user()))
+
+
+@bp.get("/users/<user_id>/following")
+def user_following(user_id):
+    return jsonify(social.following(user_id, viewer=current_user()))
+
+
 @bp.post("/users/<user_id>/follow")
 def follow(user_id):
     return jsonify(social.follow(require_user(), user_id))
