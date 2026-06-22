@@ -9,6 +9,18 @@ const apiTarget = process.env.VITE_PROXY_TARGET || 'http://localhost:5000';
 // https://vite.dev/config/  (test block typed via the vitest/config reference above)
 export default defineConfig({
   plugins: [react()],
+  build: {
+    rollupOptions: {
+      output: {
+        // Split big, rarely-changing vendors into their own long-cacheable chunks.
+        manualChunks: {
+          react: ['react', 'react-dom', 'react-router-dom'],
+          mui: ['@mui/material', '@mui/icons-material', '@emotion/react', '@emotion/styled'],
+          query: ['@tanstack/react-query'],
+        },
+      },
+    },
+  },
   server: {
     port: 5173,
     host: true, // listen on 0.0.0.0 so the container port is reachable
