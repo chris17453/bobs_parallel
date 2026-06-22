@@ -13,6 +13,8 @@ import type {
   SearchResults,
   ShareResponse,
   UnreadCountResponse,
+  UpdateMeRequest,
+  UpdateMeResponse,
   User,
 } from './types';
 
@@ -73,6 +75,8 @@ function qs(params: Record<string, string | number | undefined>): string {
 export const api = {
   // ---- session / identity ----
   me: (signal?: AbortSignal) => request<MeResponse>('/api/me', { signal }),
+  updateMe: (body: UpdateMeRequest) =>
+    request<UpdateMeResponse>('/api/me', { method: 'PATCH', body }),
 
   // ---- auth ----
   signup: (body: { username: string; display_name: string; password: string }) =>

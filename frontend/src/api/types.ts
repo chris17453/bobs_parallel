@@ -118,6 +118,16 @@ export interface MeResponse {
   user: User | null;
 }
 
+/** Body for PATCH /api/me — only provided fields change (SPEC-api). */
+export interface UpdateMeRequest {
+  display_name?: string;
+  avatar_url?: string;
+}
+
+export interface UpdateMeResponse {
+  user: User;
+}
+
 export interface ResetRequestResponse {
   reset_url: string;
 }

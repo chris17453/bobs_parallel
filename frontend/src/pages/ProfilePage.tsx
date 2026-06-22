@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -15,6 +16,7 @@ import {
 import { api } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 import { useFollow } from '../hooks/useFollow';
+import EditProfileDialog from '../components/EditProfileDialog';
 import type { Profile } from '../api/types';
 
 function Stat({ label, value }: { label: string; value: number }) {
@@ -36,6 +38,7 @@ export default function ProfilePage() {
   const { user: me, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const follow = useFollow();
+  const [editOpen, setEditOpen] = useState(false);
 
   const targetId = id ?? me?.id;
   const isOwn = !!targetId && targetId === me?.id;
@@ -94,9 +97,14 @@ export default function ProfilePage() {
             </Stack>
 
             {isOwn ? (
-              <Button variant="outlined" onClick={handleLogout}>
-                Log out
-              </Button>
+              <Stack direction="row" spacing={1}>
+                <Button variant="contained" onClick={() => setEditOpen(true)}>
+                  Edit profile
+                </Button>
+                <Button variant="outlined" onClick={handleLogout}>
+                  Log out
+                </Button>
+              </Stack>
             ) : (
               isAuthenticated && (
                 <Button
@@ -135,6 +143,15 @@ export default function ProfilePage() {
                 </ImageListItem>
               ))}
             </ImageList>
+          )}
+          {isOwn && (
+            <EditProfileDialog
+              open={editOpen}
+              onClose={() => setEditOpen(false)}
+              userId={data.id}
+              displayName={data.display_name}
+              avatarUrl={data.avatar_url}
+            />
           )}
         </>
       )}

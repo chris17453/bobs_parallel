@@ -12,6 +12,10 @@ newer entry if something changes. The high-signal items are mirrored in `CLAUDE.
   `make seed` is safe to re-run and tests don't accumulate state.
 - **P4 — Identity snapshot in localStorage** (not secrets) gives instant logged-in UI while
   `/api/me` confirms in the background.
+- **P5 — Batch per-item counts with one GROUP BY per metric, not one query per item.** The
+  feed serializer fetched like/comment/share counts per item (~3N queries/page); a grouped
+  `counts_for_items(ids)` collapses each metric to a single query (3 total/page). Items with
+  no rows are simply absent from the result → default to 0. Keeps infinite scroll cheap.
 
 ## Negative (avoid / gotchas)
 - **N1 — Mobile browsers block unmuted autoplay.** Always start preview audio muted; unmute on

@@ -103,6 +103,10 @@ class LikeRepository:
     def count_for_item(self, item_id):
         return Like.query.filter_by(item_id=item_id).count()
 
+    def counts_for_items(self, item_ids):
+        """{item_id: like_count} for a batch — one grouped query, avoids N+1 in the feed."""
+        return _grouped_counts(Like.item_id, item_ids)
+
     def liked_item_ids(self, user_id, item_ids):
         if not item_ids:
             return set()
@@ -136,6 +140,19 @@ class FollowRepository:
         return Follow.query.filter_by(follower_id=user_id).count()
 
 
+def _grouped_counts(item_col, item_ids):
+    """{item_id: count} over item_ids using a single GROUP BY. Missing ids => absent (treat 0)."""
+    if not item_ids:
+        return {}
+    rows = (
+        db.session.query(item_col, db.func.count())
+        .filter(item_col.in_(item_ids))
+        .group_by(item_col)
+        .all()
+    )
+    return {item_id: count for item_id, count in rows}
+
+
 class CommentRepository:
     def get(self, comment_id):
         return db.session.get(Comment, comment_id)
@@ -148,6 +165,9 @@ class CommentRepository:
 
     def count_for_item(self, item_id):
         return Comment.query.filter_by(item_id=item_id).count()
+
+    def counts_for_items(self, item_ids):
+        return _grouped_counts(Comment.item_id, item_ids)
 
     def for_item(self, item_id, limit=100):
         """Comments with their author, oldest first (thread order)."""
@@ -172,6 +192,9 @@ class ShareRepository:
 
     def count_for_item(self, item_id):
         return Share.query.filter_by(item_id=item_id).count()
+
+    def counts_for_items(self, item_ids):
+        return _grouped_counts(Share.item_id, item_ids)
 
     def shared_item_ids(self, user_id, item_ids):
         if not item_ids:
