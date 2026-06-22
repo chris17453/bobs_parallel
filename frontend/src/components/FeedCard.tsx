@@ -11,6 +11,7 @@ import type { FeedItem } from '../api/types';
 import { useLike } from '../hooks/useLike';
 import { useShare } from '../hooks/useShare';
 import { usePlayer } from '../player/PlayerContext';
+import { SHORTS_MAX_WIDTH } from '../theme';
 import CommentsSheet from './CommentsSheet';
 
 interface Props {
@@ -133,45 +134,87 @@ export default function FeedCard({ item, active }: Props) {
         overflow: 'hidden',
         cursor: item.preview_url ? 'pointer' : 'default',
         bgcolor: '#000',
-        backgroundImage: item.image_url ? `url(${item.image_url})` : undefined,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
         userSelect: 'none',
       }}
     >
-      {/* Readability gradient */}
+      {/* Full-bleed blurred ambient background (YouTube Shorts style) */}
+      {item.image_url && (
+        <Box
+          aria-hidden
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            backgroundImage: `url(${item.image_url})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            filter: 'blur(60px) brightness(0.45)',
+            transform: 'scale(1.3)',
+          }}
+        />
+      )}
+
+      {/* Centered vertical "stage" — the crisp content column, letterboxed on desktop */}
       <Box
         sx={{
           position: 'absolute',
-          inset: 0,
-          background:
-            'linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,0.75) 100%)',
+          top: 0,
+          bottom: 0,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '100%',
+          maxWidth: SHORTS_MAX_WIDTH,
+          overflow: 'hidden',
         }}
-      />
-
-      {/* Top-left: kind chip + mute state */}
-      <Stack
-        direction="row"
-        spacing={1}
-        sx={{ position: 'absolute', top: 16, left: 16, alignItems: 'center' }}
       >
-        <Chip
-          label={item.kind}
-          size="small"
-          color="primary"
-          sx={{ textTransform: 'capitalize', fontWeight: 600 }}
+        {/* Album cover, letterboxed (contain) so the full square is always visible */}
+        {item.image_url && (
+          <Box
+            component="img"
+            src={item.image_url}
+            alt={item.title}
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+            }}
+          />
+        )}
+
+        {/* Readability gradient */}
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            background:
+              'linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,0.75) 100%)',
+          }}
         />
-        {item.preview_url && (muted ? <VolumeOffIcon fontSize="small" /> : <VolumeUpIcon fontSize="small" />)}
-      </Stack>
 
-      {/* Bottom info + actions */}
-      <Stack
-        direction="row"
-        alignItems="flex-end"
-        justifyContent="space-between"
-        sx={{ position: 'absolute', left: 16, right: 16, bottom: 96, color: '#fff' }}
-      >
-        <Box sx={{ minWidth: 0, pr: 2 }}>
+        {/* Top-left: kind chip + mute state */}
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{ position: 'absolute', top: 16, left: 16, alignItems: 'center' }}
+        >
+          <Chip
+            label={item.kind}
+            size="small"
+            color="primary"
+            sx={{ textTransform: 'capitalize', fontWeight: 600 }}
+          />
+          {item.preview_url && (muted ? <VolumeOffIcon fontSize="small" /> : <VolumeUpIcon fontSize="small" />)}
+        </Stack>
+
+        {/* Bottom info + actions */}
+        <Stack
+          direction="row"
+          alignItems="flex-end"
+          justifyContent="space-between"
+          sx={{ position: 'absolute', left: 16, right: 16, bottom: 96, color: '#fff' }}
+        >
+          <Box sx={{ minWidth: 0, pr: 2 }}>
           <Typography variant="h5" fontWeight={700} noWrap>
             {item.title}
           </Typography>
@@ -224,7 +267,8 @@ export default function FeedCard({ item, active }: Props) {
             </Typography>
           </Stack>
         </Stack>
-      </Stack>
+        </Stack>
+      </Box>
 
       <CommentsSheet
         itemId={item.id}

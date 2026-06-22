@@ -23,7 +23,6 @@ import NotificationsSheet from './NotificationsSheet';
 import MiniPlayer from './MiniPlayer';
 import { useAuth } from '../auth/AuthContext';
 import { useMarkNotificationsRead, useUnreadCount } from '../hooks/useNotifications';
-import { PHONE_MAX_WIDTH } from '../theme';
 
 const TABS = [
   { label: 'Feed', value: '/', icon: <HomeIcon /> },
@@ -150,33 +149,6 @@ export default function AppShell() {
 
       <NavDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
       <NotificationsSheet open={notifOpen} onClose={() => setNotifOpen(false)} />
-    </Box>
-  );
-
-  return (
-    <Box
-      sx={{
-        height: '100dvh',
-        width: '100%',
-        display: 'flex',
-        justifyContent: 'center',
-        bgcolor: '#000', // letterbox bars on screens wider than a phone
-      }}
-    >
-      <Box
-        sx={{
-          position: 'relative',
-          width: '100%',
-          maxWidth: PHONE_MAX_WIDTH,
-          height: '100%',
-          overflow: 'hidden',
-          bgcolor: 'background.default',
-          // Subtle device edge once we're wider than the frame.
-          boxShadow: '0 0 48px rgba(0,0,0,0.6)',
-        }}
-      >
-        {inner}
-      </Box>
     </Box>
   );
 }

@@ -35,6 +35,10 @@ frontend/src/
 - **Data layer:** **TanStack Query**. Feed uses `useInfiniteQuery` keyed by feed type;
   `getNextPageParam` reads `next_cursor`. Mutations (like/follow) optimistic with rollback.
 - **Lazy load:** `IntersectionObserver` sentinel near the list end triggers `fetchNextPage`.
+- **Feed presentation (YouTube-Shorts style):** the app stays full desktop width, but each
+  feed card renders a centered vertical "stage" (max `SHORTS_MAX_WIDTH`) over a full-bleed
+  **blurred** ambient background; the album cover inside is `object-fit: contain` (letterboxed,
+  never cropped/stretched). Do NOT shrink the whole app to phone width.
 - **Audio (single source):** a global `PlayerContext` owns the only `<audio>` element. The
   in-view feed card sets the current track (muted autoplay); the **MiniPlayer** gives explicit
   play/pause, scrubber, and mute and persists across navigation. No per-card `<audio>` tags.
