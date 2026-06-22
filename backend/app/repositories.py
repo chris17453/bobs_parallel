@@ -4,7 +4,16 @@ Each repository wraps the SQLAlchemy session for one aggregate. Trivial `session
 by PK is allowed inline in services, but anything with a filter lives here.
 """
 from .extensions import db
-from .models import Comment, FeedItem, Follow, Like, PasswordReset, Share, User
+from .models import (
+    Comment,
+    FeedItem,
+    Follow,
+    Like,
+    Notification,
+    PasswordReset,
+    Share,
+    User,
+)
 
 
 class UserRepository:
@@ -171,6 +180,31 @@ class ShareRepository:
             Share.user_id == user_id, Share.item_id.in_(item_ids)
         ).all()
         return {r.item_id for r in rows}
+
+
+class NotificationRepository:
+    def add(self, notification):
+        db.session.add(notification)
+
+    def recent(self, user_id, limit=50):
+        """Recent notifications with their actor, newest first."""
+        return (
+            db.session.query(Notification, User)
+            .join(User, User.id == Notification.actor_id)
+            .filter(Notification.user_id == user_id)
+            .order_by(Notification.id.desc())
+            .limit(limit)
+            .all()
+        )
+
+    def unread_count(self, user_id):
+        return Notification.query.filter_by(user_id=user_id, read=False).count()
+
+    def mark_all_read(self, user_id):
+        return (
+            Notification.query.filter_by(user_id=user_id, read=False)
+            .update({"read": True})
+        )
 
 
 class PasswordResetRepository:

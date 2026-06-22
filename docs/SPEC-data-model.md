@@ -44,6 +44,11 @@ Flat (no nesting in v1). Listed oldest-first. Only the author may delete.
 `id` int PK. `(user_id, item_id)` is effectively unique (re-share is idempotent).
 `user_id`→users, `item_id`→feed_items, `created_at`. Powers share counts.
 
+### Notification
+`id` int PK. `user_id`→users (recipient), `actor_id`→users (who caused it),
+`kind` (`follow`, extensible), `read` bool, `created_at`. Created on follow (no self-notify).
+Listed newest-first; `mark_all_read` flips unread → read.
+
 ### PasswordReset
 | Column | Type | Notes |
 |--------|------|------|

@@ -4,7 +4,13 @@ from flask import Blueprint, jsonify, request, session
 from ..errors import Unauthorized
 from ..extensions import db
 from ..models import User
-from ..services import EngagementService, FeedService, SearchService, SocialService
+from ..services import (
+    EngagementService,
+    FeedService,
+    NotificationService,
+    SearchService,
+    SocialService,
+)
 
 bp = Blueprint("api", __name__, url_prefix="/api")
 
@@ -12,6 +18,7 @@ feeds = FeedService()
 social = SocialService()
 search_svc = SearchService()
 engagement = EngagementService()
+notifications = NotificationService()
 
 
 def current_user():
@@ -83,6 +90,21 @@ def delete_comment(comment_id):
 @bp.post("/items/<int:item_id>/share")
 def share(item_id):
     return jsonify(engagement.share(require_user(), item_id))
+
+
+@bp.get("/notifications")
+def list_notifications():
+    return jsonify(notifications.list(require_user()))
+
+
+@bp.get("/notifications/unread-count")
+def unread_count():
+    return jsonify(notifications.unread_count(require_user()))
+
+
+@bp.post("/notifications/read")
+def mark_notifications_read():
+    return jsonify(notifications.mark_all_read(require_user()))
 
 
 @bp.get("/search")

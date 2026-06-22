@@ -116,6 +116,23 @@ class Share(db.Model):
     created_at = db.Column(db.DateTime(timezone=True), default=utcnow, nullable=False)
 
 
+class Notification(db.Model):
+    """An activity notification for a recipient (e.g. 'X started following you')."""
+
+    __tablename__ = "notifications"
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(  # recipient
+        db.String(64), db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    actor_id = db.Column(  # who caused it
+        db.String(64), db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    kind = db.Column(db.String(32), nullable=False)  # 'follow' (extensible)
+    read = db.Column(db.Boolean, default=False, nullable=False, index=True)
+    created_at = db.Column(db.DateTime(timezone=True), default=utcnow, nullable=False)
+
+
 class PasswordReset(db.Model):
     """Single-use, short-TTL capability token for QR/URL based reset (no email)."""
 

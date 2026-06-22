@@ -15,6 +15,8 @@ feed built from the likes of people you follow.
 7. **Likes** — like/unlike any feed item.
 8. **Comments** — threaded comments on any feed item; author may delete their own.
 9. **Shares** — share a feed item; share count shown on the card.
+10. **Notifications** — activity feed; a new follower notifies the followed user. App-bar bell
+    with an unread badge; opening marks them read.
 
 ## UX standards (binding)
 - **Mobile-first. Phone support is mandatory** — design for ~390px width first, scale up.

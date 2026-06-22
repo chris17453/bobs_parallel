@@ -26,6 +26,9 @@ paginate use the cursor model from [SPEC-data-model](./SPEC-data-model.md).
 | POST | `/api/items/<id>/comments` | `{body}` → `{comment, comment_count}` |
 | DELETE | `/api/comments/<id>` | Delete own comment → `{ok, comment_count}` |
 | POST | `/api/items/<id>/share` | Share → `{item_id, shared, share_count}` (idempotent) |
+| GET | `/api/notifications` | `{notifications, unread_count}` (newest first) |
+| GET | `/api/notifications/unread-count` | `{unread_count}` (cheap, for badge polling) |
+| POST | `/api/notifications/read` | Mark all read → `{ok, unread_count: 0}` |
 | GET | `/api/search?q=` | `{items, users}` |
 | GET | `/api/users` | Directory to follow |
 | GET | `/api/users/<id>` | Profile + counts + likes |

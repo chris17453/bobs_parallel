@@ -9,11 +9,19 @@ from ..repositories import (
     ShareRepository,
     UserRepository,
 )
+from .notification_service import NotificationService
 
 
 class SocialService:
     def __init__(
-        self, users=None, feeds=None, likes=None, follows=None, comments=None, shares=None
+        self,
+        users=None,
+        feeds=None,
+        likes=None,
+        follows=None,
+        comments=None,
+        shares=None,
+        notifications=None,
     ):
         self.users = users or UserRepository()
         self.feeds = feeds or FeedRepository()
@@ -21,6 +29,7 @@ class SocialService:
         self.follows = follows or FollowRepository()
         self.comments = comments or CommentRepository()
         self.shares = shares or ShareRepository()
+        self.notifications = notifications or NotificationService()
 
     # ---- item serialization with viewer context ----
     def serialize_item(self, item, viewer=None):
@@ -70,6 +79,7 @@ class SocialService:
             raise NotFound("user_not_found")
         if self.follows.get(viewer.id, target_id) is None:
             self.follows.add(viewer.id, target_id)
+            self.notifications.notify_follow(viewer, target_id)
             db.session.commit()
         return self.serialize_user(target, viewer)
 

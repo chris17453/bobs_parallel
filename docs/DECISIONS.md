@@ -28,3 +28,4 @@ change that contradicts a decision must add a superseding entry here.
 | D21 | **Knowledgebase** of positive+negative lessons retained in CLAUDE.md/docs | User: retain learnings at all costs |
 | D22 | **Comments + shares are now in scope** (supersedes D13's likes-only) | User asked to layer them in; flat comments + idempotent shares, EngagementService |
 | D23 | SPA login route is **`/login`**, not `/auth` | `/auth` collides with the proxied API prefix (KB N8) |
+| D24 | **Notifications** on follow (recipient = followed user); bell + unread badge | Brief asked for friends/activity; content isn't user-owned so follow is the clean trigger |
