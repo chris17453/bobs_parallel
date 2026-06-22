@@ -24,6 +24,9 @@ newer entry if something changes. The high-signal items are mirrored in `CLAUDE.
   snapshot. Session stays in an HttpOnly cookie.
 - **N5 — Offset pagination on a live feed double-shows/skips items** when new content is
   inserted between page loads. Use the cursor (N→D5).
+- **N6 — `psycopg2-binary==2.9.9` has no cp313 wheel** → on Python 3.13 pip falls back to a
+  source build and dies with `pg_config executable not found`. Pin `>=2.9.10` (ships 3.13
+  wheels). Tests use SQLite so they don't need it, but install must still succeed.
 
 ## How to add an entry
 Append a `P#`/`N#` bullet with: what happened, the lesson, and the SPEC/decision it affects.

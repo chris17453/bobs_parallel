@@ -6,7 +6,9 @@ class DomainError(Exception):
     status = 400
 
     def __init__(self, message=None):
-        super().__init__(message or self.code)
+        # The machine code returned to the client; defaults to the class code.
+        self.code = message or self.code
+        super().__init__(self.code)
 
 
 class BadRequest(DomainError):
