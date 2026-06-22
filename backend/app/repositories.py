@@ -103,6 +103,9 @@ class LikeRepository:
     def count_for_item(self, item_id):
         return Like.query.filter_by(item_id=item_id).count()
 
+    def count_for_user(self, user_id):
+        return Like.query.filter_by(user_id=user_id).count()
+
     def counts_for_items(self, item_ids):
         """{item_id: like_count} for a batch — one grouped query, avoids N+1 in the feed."""
         return _grouped_counts(Like.item_id, item_ids)

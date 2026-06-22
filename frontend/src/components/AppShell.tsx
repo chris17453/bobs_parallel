@@ -20,6 +20,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import NavDrawer from './NavDrawer';
 import NotificationsSheet from './NotificationsSheet';
+import MiniPlayer from './MiniPlayer';
 import { useAuth } from '../auth/AuthContext';
 import { useMarkNotificationsRead, useUnreadCount } from '../hooks/useNotifications';
 
@@ -126,6 +127,8 @@ export default function AppShell() {
       <Box component="main" sx={{ flex: 1, minHeight: 0, position: 'relative' }}>
         <Outlet />
       </Box>
+
+      <MiniPlayer />
 
       <Paper elevation={3} square sx={{ flex: '0 0 auto' }}>
         <BottomNavigation

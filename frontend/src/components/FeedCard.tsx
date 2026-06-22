@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Box, Chip, IconButton, Stack, Typography } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
@@ -10,6 +10,7 @@ import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 import type { FeedItem } from '../api/types';
 import { useLike } from '../hooks/useLike';
 import { useShare } from '../hooks/useShare';
+import { usePlayer } from '../player/PlayerContext';
 import CommentsSheet from './CommentsSheet';
 
 interface Props {
@@ -19,16 +20,20 @@ interface Props {
 }
 
 /**
- * One full-viewport card. Background image; muted autoplay <audio> of preview_url
- * that plays ONLY when active and pauses off-screen. Tap toggles mute. Like button
- * is optimistic with rollback (handled by useLike).
+ * One full-viewport card. Background image. When it becomes the active/in-view
+ * card it drives the global PlayerContext (muted autoplay of preview_url); the
+ * single shared <audio> lives in the player, not here. Tap toggles mute. Like
+ * button is optimistic with rollback (handled by useLike).
  */
 export default function FeedCard({ item, active }: Props) {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [muted, setMuted] = useState(true);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const like = useLike();
   const share = useShare();
+  const player = usePlayer();
+
+  // This card "owns" the player only while it is the active card.
+  const isCurrent = player.current?.id === item.id;
+  const muted = isCurrent ? player.muted : true;
 
   // The cache patch flows back via props when this card is rendered inside the
   // feed list. For standalone use, fall back to the in-flight/last mutation so the
@@ -62,25 +67,30 @@ export default function FeedCard({ item, active }: Props) {
         ? item.share_count + 1
         : item.share_count;
 
-  // Play only the active card; pause everything else. Start muted (mobile autoplay, N1).
+  // When this card becomes active, hand it to the global player (muted autoplay,
+  // mobile policy N1). The player guarantees only one track plays at a time.
   useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
     if (active && item.preview_url) {
-      audio.muted = muted;
-      audio.play().catch(() => {
-        // Autoplay rejected — stays paused until user interacts.
-      });
-    } else {
-      audio.pause();
-      audio.currentTime = 0;
-      if (!active) setMuted(true);
+      player.setMuted(true);
+      player.play(item);
     }
-  }, [active, item.preview_url, muted]);
+    // Re-run only when activeness or the track changes; player methods are stable.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active, item.id, item.preview_url]);
 
+  // Tap the card: first tap unmutes the active card; further taps toggle play.
   const toggleMute = () => {
-    if (!item.preview_url) return;
-    setMuted((m) => !m);
+    if (!item.preview_url || !active) return;
+    if (!isCurrent) {
+      player.play(item);
+      player.setMuted(false);
+      return;
+    }
+    if (muted) {
+      player.setMuted(false);
+    } else {
+      player.toggle();
+    }
   };
 
   const toggleLike = (e: React.MouseEvent) => {
@@ -138,10 +148,6 @@ export default function FeedCard({ item, active }: Props) {
             'linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0) 35%, rgba(0,0,0,0.75) 100%)',
         }}
       />
-
-      {item.preview_url && (
-        <audio ref={audioRef} src={item.preview_url} loop muted={muted} preload="none" />
-      )}
 
       {/* Top-left: kind chip + mute state */}
       <Stack

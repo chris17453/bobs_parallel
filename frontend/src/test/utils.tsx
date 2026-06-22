@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ColorModeProvider } from '../theme/ColorModeContext';
 import { AuthProvider } from '../auth/AuthContext';
+import { PlayerProvider } from '../player/PlayerContext';
 
 export function makeQueryClient(): QueryClient {
   return new QueryClient({
@@ -28,7 +29,9 @@ export function renderWithProviders(ui: ReactElement, opts: Options = {}) {
       <QueryClientProvider client={client}>
         <ColorModeProvider>
           <AuthProvider>
-            <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>
+            <PlayerProvider>
+              <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>
+            </PlayerProvider>
           </AuthProvider>
         </ColorModeProvider>
       </QueryClientProvider>

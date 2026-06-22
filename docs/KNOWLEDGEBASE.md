@@ -41,6 +41,15 @@ newer entry if something changes. The high-signal items are mirrored in `CLAUDE.
   (not a proxied prefix). Rule: client routes avoid `/api`, `/auth`, `/healthz`. **The app is
   served on :5173 in dev (Vite); :5000 is API-only and 404s at `/` by design.**
 
+- **N9 — API response shape must match the typed client, exactly.** `/api/users/<id>`
+  returned a **nested** `{user:{…}, …}` while the React `Profile` type expected a **flat**
+  object, so `data.display_name` was `undefined` and `data.display_name[0]` threw → blank
+  profile. Fix at the contract: the endpoint returns flat fields the client reads. When the UI
+  for an endpoint "looks broken/blank," diff the JSON shape against the TS type first.
+- **N10 — Seed a real graph, not islands.** Demo users with no inter-follows/comments make
+  social pages feel broken and invite links to non-existent ids (404). The seed builds a dense
+  follow graph among ≥12 demo users + comments so every profile is populated and navigable.
+
 ## How to add an entry
 Append a `P#`/`N#` bullet with: what happened, the lesson, and the SPEC/decision it affects.
 If it changes a rule, also add a `DECISIONS.md` entry and update the relevant SPEC.

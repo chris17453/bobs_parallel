@@ -99,12 +99,14 @@ class SocialService:
         if user is None:
             raise NotFound("user_not_found")
         likes = self.feeds.liked_by_user(user_id)
-        return {
-            "user": self.serialize_user(user, viewer),
-            "follower_count": self.follows.follower_count(user_id),
-            "following_count": self.follows.following_count(user_id),
-            "likes": [self.serialize_item(it, viewer) for it in likes],
-        }
+        # Flat profile shape the UI consumes: identity + counts + liked items.
+        data = self.serialize_user(user, viewer)
+        data["username"] = user.username
+        data["like_count"] = self.likes.count_for_user(user_id)
+        data["follower_count"] = self.follows.follower_count(user_id)
+        data["following_count"] = self.follows.following_count(user_id)
+        data["likes"] = [self.serialize_item(it, viewer) for it in likes]
+        return data
 
     def directory(self, viewer=None):
         exclude = viewer.id if viewer else None

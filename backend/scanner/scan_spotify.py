@@ -15,7 +15,14 @@ sys.path.insert(0, ".")
 
 from app import create_app  # noqa: E402
 from app.extensions import db  # noqa: E402
-from app.models import FeedItem, Follow, Like, Notification, User  # noqa: E402
+from app.models import (  # noqa: E402
+    Comment,
+    FeedItem,
+    Follow,
+    Like,
+    Notification,
+    User,
+)
 from app.spotify_client import get_client  # noqa: E402
 
 
@@ -46,8 +53,30 @@ def scan(app, limit=120):
 
 DEMO_USERS = [
     ("u-nova", "Nova"), ("u-kaz", "Kaz"), ("u-mira", "Mira"),
-    ("u-dex", "Dex"), ("u-juno", "Juno"),
+    ("u-dex", "Dex"), ("u-juno", "Juno"), ("u-lux", "Lux"),
+    ("u-rio", "Rio"), ("u-sky", "Sky"), ("u-vee", "Vee"),
+    ("u-zane", "Zane"), ("u-indie", "Indie"), ("u-echo", "Echo"),
 ]
+
+DEMO_COMMENTS = [
+    "this goes hard", "on repeat all week", "who produced this??",
+    "needed this today", "instant add to the playlist", "those drums tho",
+    "sounds like a sunset", "criminally underrated", "vibe immaculate",
+    "found my new favorite", "the bassline 🔥", "perfect late-night track",
+]
+
+
+def _ensure_follow(follower_id, followed_id, notify=False):
+    if follower_id == followed_id:
+        return
+    if not Follow.query.filter_by(follower_id=follower_id, followed_id=followed_id).first():
+        db.session.add(Follow(follower_id=follower_id, followed_id=followed_id))
+        if notify and not Notification.query.filter_by(
+            user_id=followed_id, actor_id=follower_id, kind="follow"
+        ).first():
+            db.session.add(
+                Notification(user_id=followed_id, actor_id=follower_id, kind="follow")
+            )
 
 
 def seed_demo(app):
@@ -65,32 +94,41 @@ def seed_demo(app):
         print("[seed] no feed items yet; run scan first")
         return
 
-    # Each demo user likes a handful of items.
-    for uid, _ in DEMO_USERS:
+    ids = [uid for uid, _ in DEMO_USERS]
+
+    # Each demo user likes a handful of items...
+    for uid in ids:
         for it in rng.sample(items, min(12, len(items))):
             if not Like.query.filter_by(user_id=uid, item_id=it.id).first():
                 db.session.add(Like(user_id=uid, item_id=it.id))
+    # ...comments on a few...
+    for uid in ids:
+        for it in rng.sample(items, min(3, len(items))):
+            db.session.add(
+                Comment(user_id=uid, item_id=it.id, body=rng.choice(DEMO_COMMENTS))
+            )
     db.session.commit()
 
-    # If the dev user exists, wire the demo social graph around them.
+    # ...and a dense follow graph AMONG the demo users so every profile is navigable
+    # (real followers/following, nothing dangling).
+    for uid in ids:
+        others = [o for o in ids if o != uid]
+        for target in rng.sample(others, rng.randint(3, 6)):
+            _ensure_follow(uid, target)
+    db.session.commit()
+
+    # Wire the graph around the dev user too, with notifications so the bell isn't empty.
     if db.session.get(User, "dev-you") is not None:
-        # dev-you follows a couple of demo users so the Following feed is populated.
-        for uid in ("u-nova", "u-mira"):
-            if not Follow.query.filter_by(follower_id="dev-you", followed_id=uid).first():
-                db.session.add(Follow(follower_id="dev-you", followed_id=uid))
-        # A couple of demo users follow dev-you back, with notifications so the bell isn't empty.
-        for uid in ("u-kaz", "u-juno"):
-            if not Follow.query.filter_by(follower_id=uid, followed_id="dev-you").first():
-                db.session.add(Follow(follower_id=uid, followed_id="dev-you"))
-            if not Notification.query.filter_by(
-                user_id="dev-you", actor_id=uid, kind="follow"
-            ).first():
-                db.session.add(
-                    Notification(user_id="dev-you", actor_id=uid, kind="follow")
-                )
+        for uid in ("u-nova", "u-mira", "u-lux"):
+            _ensure_follow("dev-you", uid)
+        for uid in ("u-kaz", "u-juno", "u-rio", "u-sky"):
+            _ensure_follow(uid, "dev-you", notify=True)
         db.session.commit()
 
-    print(f"[seed] {len(DEMO_USERS)} demo users with likes + notifications ready")
+    print(
+        f"[seed] {len(DEMO_USERS)} demo users with likes, comments, "
+        f"follow graph + notifications ready"
+    )
 
 
 def main():
