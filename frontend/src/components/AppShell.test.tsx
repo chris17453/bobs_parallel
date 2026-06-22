@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../App';
 import { renderWithProviders } from '../test/utils';
@@ -51,5 +51,19 @@ describe('AppShell', () => {
     renderWithProviders(<App />, { route: '/login' });
     expect(screen.queryByText('Friends')).not.toBeInTheDocument();
     expect(await screen.findByText('Continue with Spotify')).toBeInTheDocument();
+  });
+
+  it('shows the unread badge count from the stubbed unread-count response', async () => {
+    const ME = { id: 'u1', display_name: 'Me', avatar_url: null };
+    localStorage.setItem('parallel.auth', JSON.stringify(ME));
+    installFetchMock({
+      'GET /api/me': { user: ME },
+      'GET /api/notifications/unread-count': { unread_count: 3 },
+    });
+
+    renderWithProviders(<App />, { route: '/' });
+
+    const bell = await screen.findByLabelText('Notifications');
+    expect(await within(bell).findByText('3')).toBeInTheDocument();
   });
 });

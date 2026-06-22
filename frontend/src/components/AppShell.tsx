@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   AppBar,
+  Badge,
   Box,
   BottomNavigation,
   BottomNavigationAction,
@@ -16,7 +17,11 @@ import SearchIcon from '@mui/icons-material/Search';
 import HomeIcon from '@mui/icons-material/Home';
 import PeopleIcon from '@mui/icons-material/People';
 import PersonIcon from '@mui/icons-material/Person';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import NavDrawer from './NavDrawer';
+import NotificationsSheet from './NotificationsSheet';
+import { useAuth } from '../auth/AuthContext';
+import { useMarkNotificationsRead, useUnreadCount } from '../hooks/useNotifications';
 
 const TABS = [
   { label: 'Feed', value: '/', icon: <HomeIcon /> },
@@ -39,9 +44,19 @@ function activeTab(pathname: string): string {
  */
 export default function AppShell() {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const [query, setQuery] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
+  const { isAuthenticated } = useAuth();
+  const { data: unread } = useUnreadCount();
+  const markRead = useMarkNotificationsRead();
+  const unreadCount = unread?.unread_count ?? 0;
+
+  const openNotifications = () => {
+    setNotifOpen(true);
+    markRead.mutate();
+  };
 
   const chromeless =
     location.pathname.startsWith('/login') || location.pathname.startsWith('/reset');
@@ -92,6 +107,19 @@ export default function AppShell() {
               inputProps={{ 'aria-label': 'Search' }}
             />
           </Paper>
+
+          {isAuthenticated && (
+            <IconButton
+              edge="end"
+              aria-label="Notifications"
+              onClick={openNotifications}
+              sx={{ minWidth: 44, minHeight: 44 }}
+            >
+              <Badge badgeContent={unreadCount} color="error" invisible={unreadCount === 0}>
+                <NotificationsIcon />
+              </Badge>
+            </IconButton>
+          )}
         </Toolbar>
       </AppBar>
 
@@ -117,6 +145,7 @@ export default function AppShell() {
       </Paper>
 
       <NavDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      <NotificationsSheet open={notifOpen} onClose={() => setNotifOpen(false)} />
     </Box>
   );
 }

@@ -6,6 +6,10 @@ generic messages (e.g. the frontend, originally committed as "initial").
 ## Unreleased
 
 ### Added
+- **Notifications** — a new follower notifies the followed user. Backend (Notification model,
+  `NotificationService`, created on follow, list/unread-count/mark-read API) and frontend
+  (app-bar bell with unread `Badge`, bottom-sheet list, `useNotifications`/`useUnreadCount`
+  hooks). Demo seed gives `dev-you` follow-back notifications so the bell isn't empty.
 - **Comments & shares** — backend (Comment/Share models, `EngagementService`, flat comments
   with author-only delete, idempotent shares) and frontend (action buttons with counts,
   bottom-sheet `CommentsSheet`, `useComments`/`useShare` hooks). Feed/item payloads now carry
