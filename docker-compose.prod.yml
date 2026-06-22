@@ -28,6 +28,10 @@ services:
       SPOTIFY_CLIENT_SECRET: ${SPOTIFY_CLIENT_SECRET:-}
       SPOTIFY_REDIRECT_URI: ${SPOTIFY_REDIRECT_URI:-}
       FRONTEND_DIST: /app/frontend_dist
+      # Turn on when this service is behind HTTPS/TLS.
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-}
+      RATELIMIT_ENABLED: ${RATELIMIT_ENABLED:-true}
+      RATELIMIT_STORAGE_URI: ${RATELIMIT_STORAGE_URI:-memory://}
     ports:
       - "${WEB_PORT:-8080}:5000"
     depends_on:

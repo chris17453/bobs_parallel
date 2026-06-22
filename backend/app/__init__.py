@@ -5,7 +5,7 @@ from flask_cors import CORS
 
 from .config import Config
 from .errors import DomainError
-from .extensions import db
+from .extensions import db, limiter
 
 
 def create_app(config_object=Config):
@@ -22,6 +22,7 @@ def create_app(config_object=Config):
     )
 
     db.init_app(app)
+    limiter.init_app(app)
 
     from . import models  # noqa: F401  (register models)
     from .routes import api_bp, auth_bp
@@ -46,6 +47,10 @@ def _register_error_handlers(app):
     @app.errorhandler(DomainError)
     def handle_domain_error(err):
         return jsonify({"error": err.code}), err.status
+
+    @app.errorhandler(429)
+    def handle_rate_limited(err):
+        return jsonify({"error": "rate_limited"}), 429
 
 
 def _register_frontend(app):

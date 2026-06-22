@@ -1,7 +1,7 @@
 """Comments + shares: service behavior and API smoke."""
 import pytest
 
-from app.errors import BadRequest, Forbidden, NotFound
+from app.errors import Forbidden, NotFound
 from app.services.engagement_service import EngagementService
 
 

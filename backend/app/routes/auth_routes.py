@@ -8,10 +8,16 @@ from flask import (
 )
 
 from ..errors import BadRequest, Forbidden
+from ..extensions import limiter
 from ..services import AuthService
 from ..spotify_client import SPOTIFY_API, SPOTIFY_AUTH_URL, SPOTIFY_TOKEN_URL
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")
+
+# Throttle credential + token endpoints to blunt brute force / abuse.
+LOGIN_LIMIT = "20 per minute"
+SIGNUP_LIMIT = "10 per minute"
+RESET_LIMIT = "10 per minute"
 
 auth_service = AuthService()
 
@@ -79,6 +85,7 @@ def callback():
 
 # ---------- Local accounts ----------
 @bp.post("/signup")
+@limiter.limit(SIGNUP_LIMIT)
 def signup():
     body = request.get_json(silent=True) or {}
     user = auth_service.signup(
@@ -89,6 +96,7 @@ def signup():
 
 
 @bp.post("/login-local")
+@limiter.limit(LOGIN_LIMIT)
 def login_local():
     body = request.get_json(silent=True) or {}
     user = auth_service.login_local(body.get("username"), body.get("password"))
@@ -99,6 +107,7 @@ def login_local():
 
 # ---------- QR / URL password reset ----------
 @bp.post("/reset/request")
+@limiter.limit(RESET_LIMIT)
 def reset_request():
     body = request.get_json(silent=True) or {}
     base_url = current_app.config.get("PUBLIC_BASE_URL", request.host_url)

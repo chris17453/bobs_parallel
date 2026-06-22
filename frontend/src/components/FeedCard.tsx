@@ -4,8 +4,13 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import ShareIcon from '@mui/icons-material/Share';
+import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 import type { FeedItem } from '../api/types';
 import { useLike } from '../hooks/useLike';
+import { useShare } from '../hooks/useShare';
+import CommentsSheet from './CommentsSheet';
 
 interface Props {
   item: FeedItem;
@@ -21,7 +26,9 @@ interface Props {
 export default function FeedCard({ item, active }: Props) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [muted, setMuted] = useState(true);
+  const [commentsOpen, setCommentsOpen] = useState(false);
   const like = useLike();
+  const share = useShare();
 
   // The cache patch flows back via props when this card is rendered inside the
   // feed list. For standalone use, fall back to the in-flight/last mutation so the
@@ -39,6 +46,21 @@ export default function FeedCard({ item, active }: Props) {
       : like.isPending && like.variables?.itemId === item.id
         ? Math.max(0, item.like_count + (like.variables.liked ? 1 : -1))
         : item.like_count;
+
+  // Mirror the optimistic share state for standalone use (see liked above).
+  const baseShared = item.shared ?? false;
+  const shared =
+    share.data?.item_id === item.id
+      ? share.data.shared
+      : share.isPending && share.variables?.itemId === item.id
+        ? true
+        : baseShared;
+  const shareCount =
+    share.data?.item_id === item.id
+      ? share.data.share_count
+      : share.isPending && share.variables?.itemId === item.id && !baseShared
+        ? item.share_count + 1
+        : item.share_count;
 
   // Play only the active card; pause everything else. Start muted (mobile autoplay, N1).
   useEffect(() => {
@@ -64,6 +86,28 @@ export default function FeedCard({ item, active }: Props) {
   const toggleLike = (e: React.MouseEvent) => {
     e.stopPropagation();
     like.mutate({ itemId: item.id, liked: !liked });
+  };
+
+  const openComments = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCommentsOpen(true);
+  };
+
+  const doShare = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Offer the OS share sheet when available, but always record the share.
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+      void navigator
+        .share({
+          title: item.title,
+          text: item.subtitle ?? item.title,
+          url: item.spotify_url ?? undefined,
+        })
+        .catch(() => {
+          // User dismissed or unsupported payload — ignore.
+        });
+    }
+    share.mutate({ itemId: item.id });
   };
 
   return (
@@ -132,20 +176,55 @@ export default function FeedCard({ item, active }: Props) {
           )}
         </Box>
 
-        <Stack alignItems="center" spacing={0.5}>
-          <IconButton
-            onClick={toggleLike}
-            aria-label={liked ? 'Unlike' : 'Like'}
-            aria-pressed={liked}
-            sx={{ color: liked ? 'secondary.main' : '#fff', p: 1.5 }}
-          >
-            {liked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
-          </IconButton>
-          <Typography variant="caption" sx={{ color: '#fff' }}>
-            {likeCount}
-          </Typography>
+        <Stack alignItems="center" spacing={1.5}>
+          <Stack alignItems="center" spacing={0.5}>
+            <IconButton
+              onClick={toggleLike}
+              aria-label={liked ? 'Unlike' : 'Like'}
+              aria-pressed={liked}
+              sx={{ color: liked ? 'secondary.main' : '#fff', p: 1.5 }}
+            >
+              {liked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+            </IconButton>
+            <Typography variant="caption" sx={{ color: '#fff' }}>
+              {likeCount}
+            </Typography>
+          </Stack>
+
+          <Stack alignItems="center" spacing={0.5}>
+            <IconButton
+              onClick={openComments}
+              aria-label="Comments"
+              sx={{ color: '#fff', p: 1.5 }}
+            >
+              <ChatBubbleOutlineIcon />
+            </IconButton>
+            <Typography variant="caption" sx={{ color: '#fff' }}>
+              {item.comment_count}
+            </Typography>
+          </Stack>
+
+          <Stack alignItems="center" spacing={0.5}>
+            <IconButton
+              onClick={doShare}
+              aria-label="Share"
+              aria-pressed={shared}
+              sx={{ color: shared ? 'secondary.main' : '#fff', p: 1.5 }}
+            >
+              {shared ? <ShareIcon /> : <ShareOutlinedIcon />}
+            </IconButton>
+            <Typography variant="caption" sx={{ color: '#fff' }}>
+              {shareCount}
+            </Typography>
+          </Stack>
         </Stack>
       </Stack>
+
+      <CommentsSheet
+        itemId={item.id}
+        open={commentsOpen}
+        onClose={() => setCommentsOpen(false)}
+      />
     </Box>
   );
 }

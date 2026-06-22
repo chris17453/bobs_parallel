@@ -15,7 +15,10 @@ const item: FeedItem = {
   image_url: 'https://example.test/img.jpg',
   preview_url: 'https://example.test/p.mp3',
   like_count: 7,
+  comment_count: 3,
+  share_count: 5,
   liked: false,
+  shared: false,
 };
 
 describe('FeedCard', () => {
@@ -30,6 +33,24 @@ describe('FeedCard', () => {
     expect(screen.getByText('Neon Parallax')).toBeInTheDocument();
     expect(screen.getByText('The Cyans')).toBeInTheDocument();
     expect(screen.getByText('7')).toBeInTheDocument();
+  });
+
+  it('renders comment and share counts and reflects shared state', () => {
+    renderWithProviders(<FeedCard item={item} active={false} />);
+    expect(screen.getByText('3')).toBeInTheDocument(); // comment_count
+    expect(screen.getByText('5')).toBeInTheDocument(); // share_count
+
+    // Not shared -> button labelled Share, not pressed.
+    const shareBtn = screen.getByRole('button', { name: 'Share' });
+    expect(shareBtn).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('marks the share button pressed when the item is already shared', () => {
+    renderWithProviders(<FeedCard item={{ ...item, shared: true }} active={false} />);
+    expect(screen.getByRole('button', { name: 'Share' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
   });
 
   it('shows a like button that optimistically increments on click', async () => {

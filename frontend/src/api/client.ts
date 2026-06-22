@@ -1,11 +1,15 @@
 // Typed fetch wrapper. Relative paths so the dev proxy and prod same-origin both work.
 // VITE_API_BASE is an optional prefix (default empty string).
 import type {
+  AddCommentResponse,
+  CommentsResponse,
+  DeleteCommentResponse,
   FeedPage,
   MeResponse,
   Profile,
   ResetRequestResponse,
   SearchResults,
+  ShareResponse,
   User,
 } from './types';
 
@@ -100,6 +104,23 @@ export const api = {
     request<{ item: import('./types').FeedItem }>(`/api/items/${itemId}/like`, {
       method: 'DELETE',
     }),
+
+  // ---- comments ----
+  comments: (itemId: number, signal?: AbortSignal) =>
+    request<CommentsResponse>(`/api/items/${itemId}/comments`, { signal }),
+  addComment: (itemId: number, body: string) =>
+    request<AddCommentResponse>(`/api/items/${itemId}/comments`, {
+      method: 'POST',
+      body: { body },
+    }),
+  deleteComment: (commentId: number) =>
+    request<DeleteCommentResponse>(`/api/comments/${commentId}`, {
+      method: 'DELETE',
+    }),
+
+  // ---- shares ----
+  share: (itemId: number) =>
+    request<ShareResponse>(`/api/items/${itemId}/share`, { method: 'POST' }),
 
   // ---- search ----
   search: (q: string, signal?: AbortSignal) =>

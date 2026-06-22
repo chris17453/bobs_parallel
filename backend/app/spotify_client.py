@@ -4,7 +4,6 @@ The rest of the app only talks to `get_client()`, so swapping mock <-> real is a
 single env-var flip (SPOTIFY_CLIENT_ID / SPOTIFY_CLIENT_SECRET).
 """
 import base64
-import hashlib
 import time
 
 import requests

@@ -20,6 +20,9 @@ class TestConfig(Config):
     SPOTIFY_CLIENT_ID = ""
     SPOTIFY_CLIENT_SECRET = ""
     PUBLIC_BASE_URL = "http://test.local"
+    # Off by default: the in-memory limiter store is process-shared, so leaving it on
+    # would let counters bleed across tests. The rate-limit test enables it in isolation.
+    RATELIMIT_ENABLED = False
 
 
 @pytest.fixture
@@ -45,7 +48,6 @@ def db(app):
 @pytest.fixture
 def seeded(app):
     """A small deterministic dataset inside the app context."""
-    from app.spotify_client import MockSpotifyClient
     from scanner.scan_spotify import scan, seed_demo
 
     with app.app_context():

@@ -25,8 +25,46 @@ export interface FeedItem {
   spotify_url?: string | null;
   popularity?: number;
   like_count: number;
+  comment_count: number;
+  share_count: number;
   /** Present when authed. */
   liked?: boolean;
+  /** Present when authed. */
+  shared?: boolean;
+}
+
+/** A single comment on a feed item (GET /api/items/:id/comments). */
+export interface Comment {
+  id: number;
+  item_id: number;
+  body: string;
+  created_at: string;
+  author: {
+    id: string;
+    display_name: string;
+    avatar_url?: string | null;
+  };
+}
+
+export interface CommentsResponse {
+  comments: Comment[];
+  comment_count: number;
+}
+
+export interface AddCommentResponse {
+  comment: Comment;
+  comment_count: number;
+}
+
+export interface DeleteCommentResponse {
+  ok: boolean;
+  comment_count: number;
+}
+
+export interface ShareResponse {
+  item_id: number;
+  shared: boolean;
+  share_count: number;
 }
 
 /** Cursor-paginated page (SPEC-data-model: cursor = last seen FeedItem.id, descending). */
