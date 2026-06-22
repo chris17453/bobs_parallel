@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, Box, CircularProgress, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import FeedList from '../components/FeedList';
 import { useFeed, type FeedType } from '../hooks/useFeed';
 import { useAuth } from '../auth/AuthContext';
+import { usePlayer } from '../player/PlayerContext';
 
 interface Props {
   initialType?: FeedType;
@@ -12,8 +13,18 @@ interface Props {
 export default function FeedPage({ initialType = 'main' }: Props) {
   const [type, setType] = useState<FeedType>(initialType);
   const { isAuthenticated } = useAuth();
+  const player = usePlayer();
 
   const feed = useFeed(type);
+
+  // Surface the player as soon as there's something playable: load (paused) the
+  // first track with a preview so the mini-player is visible and the user can hit
+  // play — without waiting to scroll onto a track card in the mixed feed.
+  useEffect(() => {
+    if (player.current) return;
+    const firstPlayable = feed.items.find((it) => it.preview_url);
+    if (firstPlayable) player.load(firstPlayable);
+  }, [feed.items, player]);
 
   return (
     <Box sx={{ position: 'absolute', inset: 0 }}>

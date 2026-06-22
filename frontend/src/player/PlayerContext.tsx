@@ -21,6 +21,8 @@ interface PlayerState {
 interface PlayerApi extends PlayerState {
   /** Play an item: loads its preview and plays. Same item resumes. No-op without a preview. */
   play: (item: FeedItem) => void;
+  /** Load an item as the current track WITHOUT autoplaying (shows the player, paused). */
+  load: (item: FeedItem) => void;
   /** Toggle play/pause for the current track. */
   toggle: () => void;
   /** Seek to a position (seconds) within the preview. */
@@ -49,9 +51,14 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   // Create the audio element once, imperatively, so it lives outside the React
   // tree and survives route changes / re-renders.
+  //
+  // NOTE: deliberately NO crossOrigin. Preview hosts (soundhelix, Spotify CDN)
+  // don't send CORS headers, so crossOrigin="anonymous" makes the browser BLOCK
+  // the media fetch entirely (ERR_FAILED) — i.e. no audio at all. Without it the
+  // audio plays fine; the Visualizer uses a playback-synced animation rather than
+  // routing the (cross-origin) element through Web Audio, which would mute it.
   if (audioRef.current === null && typeof document !== 'undefined') {
     const el = document.createElement('audio');
-    el.crossOrigin = 'anonymous';
     el.preload = 'none';
     el.loop = true;
     audioRef.current = el;
@@ -126,6 +133,21 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     [current, muted],
   );
 
+  const load = useCallback(
+    (item: FeedItem) => {
+      const audio = audioRef.current;
+      if (!audio || !item.preview_url) return;
+      if (current?.id === item.id) return; // already loaded
+      setCurrent(item);
+      setPosition(0);
+      setDuration(0);
+      setIsPlaying(false);
+      audio.src = item.preview_url;
+      audio.load();
+    },
+    [current],
+  );
+
   const toggle = useCallback(() => {
     const audio = audioRef.current;
     if (!audio || !current) return;
@@ -172,13 +194,14 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
       position,
       duration,
       play,
+      load,
       toggle,
       seek,
       setMuted,
       stop,
       audioEl: audioRef.current,
     }),
-    [current, isPlaying, muted, position, duration, play, toggle, seek, setMuted, stop],
+    [current, isPlaying, muted, position, duration, play, load, toggle, seek, setMuted, stop],
   );
 
   return <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>;

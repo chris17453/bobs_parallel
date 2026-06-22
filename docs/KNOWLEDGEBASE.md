@@ -50,6 +50,14 @@ newer entry if something changes. The high-signal items are mirrored in `CLAUDE.
   social pages feel broken and invite links to non-existent ids (404). The seed builds a dense
   follow graph among ≥12 demo users + comments so every profile is populated and navigable.
 
+- **N11 — `crossOrigin` + Web Audio breaks playback of non-CORS audio.** Setting
+  `audio.crossOrigin="anonymous"` makes the browser require CORS headers; preview hosts
+  (soundhelix, Spotify CDN) don't send them → the media fetch is **blocked** (`ERR_FAILED`),
+  so there's NO audio. And routing a cross-origin element through `createMediaElementSource`
+  **taints → silences** it. So: no `crossOrigin`, and the Visualizer is a **playback-synced
+  animation** (not AnalyserNode). Real FFT needs a same-origin audio proxy. Symptom was "the
+  mini-player never appears" (audio errored before a track ever became current).
+
 ## How to add an entry
 Append a `P#`/`N#` bullet with: what happened, the lesson, and the SPEC/decision it affects.
 If it changes a rule, also add a `DECISIONS.md` entry and update the relevant SPEC.
