@@ -6,6 +6,11 @@ generic messages (e.g. the frontend, originally committed as "initial").
 ## Unreleased
 
 ### Added
+- **Profile editing** — `PATCH /api/me` (display name + avatar, validated, blocks `javascript:`
+  URIs) and an Edit-profile dialog on your own profile (name field + preset/custom avatar
+  picker) that updates the auth identity cache live.
+- **Feed perf** — per-item like/comment/share counts batched into 3 grouped queries per page
+  (was ~3×N), keeping infinite scroll cheap.
 - **Notifications** — a new follower notifies the followed user. Backend (Notification model,
   `NotificationService`, created on follow, list/unread-count/mark-read API) and frontend
   (app-bar bell with unread `Badge`, bottom-sheet list, `useNotifications`/`useUnreadCount`
