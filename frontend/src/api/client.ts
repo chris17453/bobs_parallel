@@ -5,11 +5,14 @@ import type {
   CommentsResponse,
   DeleteCommentResponse,
   FeedPage,
+  MarkReadResponse,
   MeResponse,
+  NotificationsResponse,
   Profile,
   ResetRequestResponse,
   SearchResults,
   ShareResponse,
+  UnreadCountResponse,
   User,
 } from './types';
 
@@ -138,4 +141,12 @@ export const api = {
     request<{ user: User }>(`/api/users/${encodeURIComponent(id)}/follow`, {
       method: 'DELETE',
     }),
+
+  // ---- notifications ----
+  notifications: (signal?: AbortSignal) =>
+    request<NotificationsResponse>('/api/notifications', { signal }),
+  notificationsUnreadCount: (signal?: AbortSignal) =>
+    request<UnreadCountResponse>('/api/notifications/unread-count', { signal }),
+  markNotificationsRead: () =>
+    request<MarkReadResponse>('/api/notifications/read', { method: 'POST' }),
 };

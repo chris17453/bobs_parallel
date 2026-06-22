@@ -87,6 +87,33 @@ export interface Profile extends User {
   likes: FeedItem[];
 }
 
+/** A notification row (GET /api/notifications). */
+export interface Notification {
+  id: number;
+  kind: 'follow';
+  read: boolean;
+  created_at: string;
+  actor: {
+    id: string;
+    display_name: string;
+    avatar_url?: string | null;
+  };
+}
+
+export interface NotificationsResponse {
+  notifications: Notification[];
+  unread_count: number;
+}
+
+export interface UnreadCountResponse {
+  unread_count: number;
+}
+
+export interface MarkReadResponse {
+  ok: boolean;
+  unread_count: number;
+}
+
 export interface MeResponse {
   user: User | null;
 }

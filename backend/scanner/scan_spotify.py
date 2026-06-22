@@ -15,7 +15,7 @@ sys.path.insert(0, ".")
 
 from app import create_app  # noqa: E402
 from app.extensions import db  # noqa: E402
-from app.models import FeedItem, Follow, Like, User  # noqa: E402
+from app.models import FeedItem, Follow, Like, Notification, User  # noqa: E402
 from app.spotify_client import get_client  # noqa: E402
 
 
@@ -72,14 +72,25 @@ def seed_demo(app):
                 db.session.add(Like(user_id=uid, item_id=it.id))
     db.session.commit()
 
-    # If the dev user exists, follow a couple of demo users so the Following feed is populated.
+    # If the dev user exists, wire the demo social graph around them.
     if db.session.get(User, "dev-you") is not None:
+        # dev-you follows a couple of demo users so the Following feed is populated.
         for uid in ("u-nova", "u-mira"):
             if not Follow.query.filter_by(follower_id="dev-you", followed_id=uid).first():
                 db.session.add(Follow(follower_id="dev-you", followed_id=uid))
+        # A couple of demo users follow dev-you back, with notifications so the bell isn't empty.
+        for uid in ("u-kaz", "u-juno"):
+            if not Follow.query.filter_by(follower_id=uid, followed_id="dev-you").first():
+                db.session.add(Follow(follower_id=uid, followed_id="dev-you"))
+            if not Notification.query.filter_by(
+                user_id="dev-you", actor_id=uid, kind="follow"
+            ).first():
+                db.session.add(
+                    Notification(user_id="dev-you", actor_id=uid, kind="follow")
+                )
         db.session.commit()
 
-    print(f"[seed] {len(DEMO_USERS)} demo users with likes ready")
+    print(f"[seed] {len(DEMO_USERS)} demo users with likes + notifications ready")
 
 
 def main():
