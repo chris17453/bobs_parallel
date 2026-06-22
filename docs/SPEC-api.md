@@ -19,6 +19,7 @@ paginate use the cursor model from [SPEC-data-model](./SPEC-data-model.md).
 | Method | Path | Notes |
 |--------|------|------|
 | GET | `/api/me` | `{user|null}` |
+| PATCH | `/api/me` | `{display_name?, avatar_url?}` → `{user}` (patch semantics; auth) |
 | GET | `/api/feed?cursor=&limit=` | Main mixed feed |
 | GET | `/api/feed/following?cursor=&limit=` | Items liked by people you follow |
 | POST/DELETE | `/api/items/<id>/like` | Like / unlike |

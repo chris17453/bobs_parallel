@@ -8,6 +8,7 @@ from ..services import (
     EngagementService,
     FeedService,
     NotificationService,
+    ProfileService,
     SearchService,
     SocialService,
 )
@@ -19,6 +20,7 @@ social = SocialService()
 search_svc = SearchService()
 engagement = EngagementService()
 notifications = NotificationService()
+profiles = ProfileService()
 
 
 def current_user():
@@ -37,6 +39,17 @@ def require_user():
 def me():
     user = current_user()
     return jsonify({"user": user.to_base_dict() if user else None})
+
+
+@bp.patch("/me")
+def update_me():
+    body = request.get_json(silent=True) or {}
+    updated = profiles.update_profile(
+        require_user(),
+        display_name=body.get("display_name"),
+        avatar_url=body.get("avatar_url"),
+    )
+    return jsonify({"user": updated})
 
 
 @bp.get("/feed")
