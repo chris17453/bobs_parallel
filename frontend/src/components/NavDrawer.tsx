@@ -38,7 +38,7 @@ export default function NavDrawer({ open, onClose }: Props) {
   const handleLogout = async () => {
     onClose();
     await logout();
-    navigate('/auth');
+    navigate('/login');
   };
 
   return (
@@ -84,7 +84,7 @@ export default function NavDrawer({ open, onClose }: Props) {
               <ListItemText primary="Log out" />
             </ListItemButton>
           ) : (
-            <ListItemButton onClick={() => go('/auth')}>
+            <ListItemButton onClick={() => go('/login')}>
               <ListItemIcon>
                 <LoginIcon />
               </ListItemIcon>

@@ -31,6 +31,11 @@ newer entry if something changes. The high-signal items are mirrored in `CLAUDE.
   `localhost` is itself, not the API container. Make the proxy target env-driven
   (`VITE_PROXY_TARGET`) and set it to `http://api:5000` in compose; default `localhost:5000`
   for bare-metal dev. Also set Vite `server.host: true` so the port is reachable.
+- **N8 — SPA client routes must NOT collide with proxied API prefixes.** The login page was
+  routed at `/auth`, but the Vite proxy forwards `/auth` → Flask, so a full-page load of
+  `/auth` got proxied and 404'd (you can't reach the page). Renamed the route to `/login`
+  (not a proxied prefix). Rule: client routes avoid `/api`, `/auth`, `/healthz`. **The app is
+  served on :5173 in dev (Vite); :5000 is API-only and 404s at `/` by design.**
 
 ## How to add an entry
 Append a `P#`/`N#` bullet with: what happened, the lesson, and the SPEC/decision it affects.

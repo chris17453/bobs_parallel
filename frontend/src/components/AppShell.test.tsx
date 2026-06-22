@@ -48,7 +48,7 @@ describe('AppShell', () => {
   });
 
   it('hides the bottom nav on the auth route', async () => {
-    renderWithProviders(<App />, { route: '/auth' });
+    renderWithProviders(<App />, { route: '/login' });
     expect(screen.queryByText('Friends')).not.toBeInTheDocument();
     expect(await screen.findByText('Continue with Spotify')).toBeInTheDocument();
   });

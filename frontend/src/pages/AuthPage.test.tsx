@@ -13,7 +13,7 @@ describe('AuthPage', () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it('shows the three auth flows: Spotify, log in, and sign up', async () => {
-    renderWithProviders(<App />, { route: '/auth' });
+    renderWithProviders(<App />, { route: '/login' });
 
     expect(await screen.findByText('Continue with Spotify')).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: 'Log in' })).toBeInTheDocument();
@@ -25,7 +25,7 @@ describe('AuthPage', () => {
 
   it('switches to the signup form revealing a display name field', async () => {
     const user = userEvent.setup();
-    renderWithProviders(<App />, { route: '/auth' });
+    renderWithProviders(<App />, { route: '/login' });
 
     await user.click(await screen.findByRole('tab', { name: 'Sign up' }));
     expect(await screen.findByLabelText('Display name')).toBeInTheDocument();
@@ -36,7 +36,7 @@ describe('AuthPage', () => {
       'POST /auth/reset/request': () => ({ reset_url: 'https://app.test/reset?token=abc123' }),
     });
     const user = userEvent.setup();
-    renderWithProviders(<App />, { route: '/auth' });
+    renderWithProviders(<App />, { route: '/login' });
 
     await user.click(await screen.findByRole('button', { name: 'Forgot password?' }));
     await user.type(screen.getByLabelText('Username'), 'nova');

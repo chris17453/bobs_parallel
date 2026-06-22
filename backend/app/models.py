@@ -87,6 +87,35 @@ class Like(db.Model):
     created_at = db.Column(db.DateTime(timezone=True), default=utcnow, nullable=False)
 
 
+class Comment(db.Model):
+    __tablename__ = "comments"
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(
+        db.String(64), db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    item_id = db.Column(
+        db.Integer, db.ForeignKey("feed_items.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    body = db.Column(db.String(2000), nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), default=utcnow, nullable=False)
+
+
+class Share(db.Model):
+    """A user sharing a feed item (records the act; powers share counts & a future activity feed)."""
+
+    __tablename__ = "shares"
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(
+        db.String(64), db.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    item_id = db.Column(
+        db.Integer, db.ForeignKey("feed_items.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    created_at = db.Column(db.DateTime(timezone=True), default=utcnow, nullable=False)
+
+
 class PasswordReset(db.Model):
     """Single-use, short-TTL capability token for QR/URL based reset (no email)."""
 

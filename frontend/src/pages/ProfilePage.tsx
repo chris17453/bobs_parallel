@@ -52,7 +52,7 @@ export default function ProfilePage() {
         <Typography color="text.secondary" gutterBottom>
           Sign in to see your profile.
         </Typography>
-        <Button variant="contained" onClick={() => navigate('/auth')}>
+        <Button variant="contained" onClick={() => navigate('/login')}>
           Sign in
         </Button>
       </Box>
@@ -61,7 +61,7 @@ export default function ProfilePage() {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/auth');
+    navigate('/login');
   };
 
   return (

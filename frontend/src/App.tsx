@@ -17,7 +17,7 @@ export default function App() {
         <Route path="/friends" element={<FriendsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/users/:id" element={<ProfilePage />} />
-        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/login" element={<AuthPage />} />
         <Route path="/reset" element={<ResetPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

@@ -4,7 +4,7 @@ Each repository wraps the SQLAlchemy session for one aggregate. Trivial `session
 by PK is allowed inline in services, but anything with a filter lives here.
 """
 from .extensions import db
-from .models import FeedItem, Follow, Like, PasswordReset, User
+from .models import Comment, FeedItem, Follow, Like, PasswordReset, Share, User
 
 
 class UserRepository:
@@ -125,6 +125,52 @@ class FollowRepository:
 
     def following_count(self, user_id):
         return Follow.query.filter_by(follower_id=user_id).count()
+
+
+class CommentRepository:
+    def get(self, comment_id):
+        return db.session.get(Comment, comment_id)
+
+    def add(self, comment):
+        db.session.add(comment)
+
+    def delete(self, comment):
+        db.session.delete(comment)
+
+    def count_for_item(self, item_id):
+        return Comment.query.filter_by(item_id=item_id).count()
+
+    def for_item(self, item_id, limit=100):
+        """Comments with their author, oldest first (thread order)."""
+        return (
+            db.session.query(Comment, User)
+            .join(User, User.id == Comment.user_id)
+            .filter(Comment.item_id == item_id)
+            .order_by(Comment.id.asc())
+            .limit(limit)
+            .all()
+        )
+
+
+class ShareRepository:
+    def get(self, user_id, item_id):
+        return Share.query.filter_by(user_id=user_id, item_id=item_id).first()
+
+    def add(self, user_id, item_id):
+        share = Share(user_id=user_id, item_id=item_id)
+        db.session.add(share)
+        return share
+
+    def count_for_item(self, item_id):
+        return Share.query.filter_by(item_id=item_id).count()
+
+    def shared_item_ids(self, user_id, item_ids):
+        if not item_ids:
+            return set()
+        rows = Share.query.filter(
+            Share.user_id == user_id, Share.item_id.in_(item_ids)
+        ).all()
+        return {r.item_id for r in rows}
 
 
 class PasswordResetRepository:

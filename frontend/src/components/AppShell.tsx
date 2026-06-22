@@ -44,7 +44,7 @@ export default function AppShell() {
   const location = useLocation();
 
   const chromeless =
-    location.pathname.startsWith('/auth') || location.pathname.startsWith('/reset');
+    location.pathname.startsWith('/login') || location.pathname.startsWith('/reset');
 
   const submitSearch = (e: FormEvent) => {
     e.preventDefault();

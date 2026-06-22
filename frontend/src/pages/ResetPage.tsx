@@ -61,7 +61,7 @@ export default function ResetPage() {
         ) : done ? (
           <Stack spacing={2}>
             <Alert severity="success">Password updated. You can log in now.</Alert>
-            <Button variant="contained" onClick={() => navigate('/auth')}>
+            <Button variant="contained" onClick={() => navigate('/login')}>
               Go to login
             </Button>
           </Stack>
